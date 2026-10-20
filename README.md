@@ -7,7 +7,7 @@ circulaires are published, they show up in a second tab.
 It's one static site that works two ways:
 
 - **Website:** open the link in any browser.
-- **Android app (PWA):** open the link in Chrome on Android, then choose *⋮ → Installer l'application*. You get a home-screen
+- **Android app (PWA):** open the link in Chrome on Android, then choose _⋮ → Installer l'application_. You get a home-screen
   icon and a full-screen app that also works offline with the last downloaded circulaires.
 
 There is no backend. The browser downloads the circulaires straight from Flipp, which allows cross-origin requests, and caches them for a day.
@@ -16,30 +16,47 @@ There is no backend. The browser downloads the circulaires straight from Flipp, 
 
 ```bash
 npm install
-npm start            # http://localhost:3000
-npm test             # node:test, no network needed
+npm start              # http://localhost:3000 (no service worker here, so edits show on a plain reload)
+npm run check          # everything CI runs: format, lint, types, unit tests, browser tests
 ```
+
+| Command             | What it does                                                                                                                                         |
+| ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `npm test`          | Unit tests (`node:test`): matching, prices, recipes, cache, offline file list                                                                        |
+| `npm run test:e2e`  | Browser tests (Playwright) against a fake Flipp, never the real API, including a WCAG 2.1 AA audit (axe-core) of every screen in light and dark mode |
+| `npm run lint`      | ESLint                                                                                                                                               |
+| `npm run format`    | Prettier (`format:check` only checks)                                                                                                                |
+| `npm run typecheck` | Type-checks all of `public/` (the service worker with its own Worker config) from JSDoc annotations; no build step                                   |
+
+Locally the browser tests use your installed Chrome; CI installs Chromium.
 
 ## Publish
 
-`.github/workflows/pages.yml` runs the tests and publishes `public/` to GitHub Pages on every push to `main`.
+Push to `main`. `.github/workflows/pages.yml` runs every check, then publishes `public/` to GitHub Pages. Nothing is
+published if a check fails. Pull requests run the checks without publishing.
 
-### Releasing a new version
+There is no version number to bump: the deploy stamps `VERSION` in `sw.js` with a hash of the app files
+(`scripts/stamp-version.mjs`). When an app file changed, the next time someone opens the app online, or brings it back
+to the screen, they get a blocking "Nouvelle version disponible" screen with a single **Installer la mise à jour** button.
+A push that doesn't touch `public/` (e.g. this README) prompts nobody.
 
-1. Change files in `public/` and **bump `VERSION` in `public/sw.js`** (e.g. `'v5'` → `'v6'`). If you add a file, also add it to `APP_FILES`.
-2. Push to `main`.
-3. The next time someone opens the app online, or brings it back to the screen, they get a blocking
-   "Nouvelle version disponible" screen with a single **Installer la mise à jour** button. The app reloads on the new version.
+If you add a file to `public/`, add it to `APP_FILES` in `public/sw.js`; a test fails until you do.
 
-The installed app runs from its own cache (cache-first), so nothing changes until the user taps that button. Offline, the
-app keeps running the installed version. Without a `VERSION` bump the browser sees no new version, so nobody is prompted.
+## Keeping it healthy
 
-`npm start` (localhost) skips the service worker, so local changes show up on a plain reload.
+- **Accessibility:** colours are chosen for WCAG AA contrast (4.5:1), including white text across the header gradient,
+  which axe can't measure; keep new colours above that ratio.
+- **Dependabot** (`.github/dependabot.yml`): weekly PRs for npm packages and the pinned GitHub Actions, skipping
+  releases younger than two weeks. The CI checks each one.
+
+## License
+
+MIT, see `LICENSE`. The fonts in `public/fonts/` are under the SIL Open Font License.
 
 ## How it works
 
 ```
-Flipp (circulaires by postal code)  ── fetched by the browser, at most once a day, or with "Rafraîchir"
+Flipp (circulaires by postal code)  ── fetched by the browser each time the app is opened, or with "Rafraîchir"
    │
    ▼
 lib/store.js     ── keeps only items that match an ingredient (fits in localStorage on a phone); splits this week / next week
@@ -57,8 +74,13 @@ lib/recommend.js ── each recipe ingredient accepts substitutes (e.g. long or
 
 - `public/lib/catalog/ingredients.js`: the ingredient catalogue. `kw` are match phrases, `ex` are exclusions, `hint` gives the examples shown in the pantry, and `price` is the regular price estimate.
 - `public/lib/catalog/recipes.js`: the recipes. `need(['pates_longues', 'pates_courtes'], …)` means "long pasta preferred, short pasta accepted". Every recipe serves at least 4.
-- `public/sw.js`: the service worker, for offline support and installability.
+- `public/app.js`: entry point; wires the UI modules together.
+- `public/ui/`: one module per part of the screen (`header`, `pantry`, `recipes`, `deals`, `list`, `weeks`, `screens`, `welcome`), the shared `state`, and `overlays` for full-screen prompts.
+- `public/pwa/updates.js`: service worker registration and the forced-update screen.
+- `public/sw.js`: the service worker, for offline support and installability. The installed app runs from its cache until the user installs an update.
+- `public/fonts/`: self-hosted fonts (SIL Open Font License), so the app looks the same offline.
 - `server.js`: a tiny local static server, only used by `npm start`.
+- `e2e/`: browser tests; `e2e/support.js` holds the fake Flipp data and a re-deployable copy of the site.
 
 ### Adding a recipe or fixing a bad match
 

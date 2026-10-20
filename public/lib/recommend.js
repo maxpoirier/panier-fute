@@ -1,8 +1,19 @@
+// @ts-check
 import { INGREDIENTS_BY_ID, REGULAR_PRICES } from './catalog/ingredients.js';
 import { RECIPES } from './catalog/recipes.js';
 
+/** @typedef {import('./deals.js').Offer} Offer */
+/** @typedef {import('./catalog/recipes.js').Recipe} Recipe */
+/** @typedef {import('./catalog/recipes.js').RecipeIngredient} RecipeIngredient */
+/** @typedef {'deal' | 'have' | 'buy' | 'optional'} Status */
+
 const WEIGHTS = { mainOnSale: 12, sideOnSale: 5, optionalOnSale: 1.5, alreadyHave: 2, mustBuy: -4, discountPoint: 0.2 };
 
+/**
+ * @param {string} id
+ * @param {Status} status
+ * @param {Offer[]} offers
+ */
 function costOf(id, status, offers) {
   if (status === 'deal') return offers[0].price;
   if (status === 'buy') return REGULAR_PRICES[id];
@@ -12,17 +23,34 @@ function costOf(id, status, offers) {
 const SEAFOOD = new Set(['saumon', 'crevettes', 'poisson_blanc', 'thon']);
 
 // Drives the card colour in the UI: meat, seafood or veggie.
+/**
+ * Fails loudly on a typo in a recipe; a test also checks every recipe ingredient exists.
+ * @param {string} id
+ */
+function ingredient(id) {
+  const found = INGREDIENTS_BY_ID.get(id);
+  if (!found) throw new Error(`Unknown ingredient: ${id}`);
+  return found;
+}
+
+/** @param {Recipe} recipe */
 function themeOf(recipe) {
   const mains = recipe.ingredients.filter((entry) => entry.main);
   if (mains.some((entry) => SEAFOOD.has(entry.id))) return 'mer';
-  if (mains.some((entry) => INGREDIENTS_BY_ID.get(entry.id).cat === 'viande' && entry.id !== 'tofu')) return 'viande';
+  if (mains.some((entry) => ingredient(entry.id).cat === 'viande' && entry.id !== 'tofu')) return 'viande';
   return 'vege';
 }
 
+/** @param {number} amount */
 const round = (amount) => Math.round(amount * 100) / 100;
 
 // Cheapest offer per store across every accepted variant, cheapest store first.
+/**
+ * @param {string[]} ids
+ * @param {Map<string, Offer[]>} offers
+ */
 function bestOffers(ids, offers) {
+  /** @type {Map<string, Offer>} */
   const byStore = new Map();
   for (const offer of ids.flatMap((id) => offers.get(id) ?? [])) {
     const current = byStore.get(offer.store);
@@ -31,19 +59,25 @@ function bestOffers(ids, offers) {
   return [...byStore.values()].sort((a, b) => a.price - b.price);
 }
 
+/**
+ * @param {RecipeIngredient} entry
+ * @param {Set<string>} pantry
+ * @param {Map<string, Offer[]>} offers
+ */
 function describe(entry, pantry, offers) {
   const accepted = [entry.id, ...entry.alt];
   const ownedId = accepted.find((id) => pantry.has(id));
   const ingredientOffers = bestOffers(accepted, offers);
+  /** @type {Status} */
   let status;
   if (ownedId) status = 'have';
   else if (ingredientOffers.length) status = 'deal';
   else status = entry.optional ? 'optional' : 'buy';
   return {
     id: entry.id,
-    name: INGREDIENTS_BY_ID.get(entry.id).name,
-    substitutes: entry.alt.map((id) => INGREDIENTS_BY_ID.get(id).name),
-    ownedName: ownedId && ownedId !== entry.id ? INGREDIENTS_BY_ID.get(ownedId).name : null,
+    name: ingredient(entry.id).name,
+    substitutes: entry.alt.map((id) => ingredient(id).name),
+    ownedName: ownedId && ownedId !== entry.id ? ingredient(ownedId).name : null,
     qty: entry.qty,
     main: Boolean(entry.main),
     optional: Boolean(entry.optional),
@@ -53,6 +87,11 @@ function describe(entry, pantry, offers) {
   };
 }
 
+/**
+ * @param {Recipe} recipe
+ * @param {Set<string>} pantry
+ * @param {Map<string, Offer[]>} offers
+ */
 export function scoreRecipe(recipe, pantry, offers) {
   const items = recipe.ingredients.map((entry) => describe(entry, pantry, offers));
   let score = 0;
@@ -88,7 +127,10 @@ export function scoreRecipe(recipe, pantry, offers) {
   };
 }
 
-// Cheapest first; among equal costs, the recipe that makes better use of the deals wins.
+/**
+ * Recipes with at least one ingredient on sale, cheapest first; among equal costs, the better use of deals wins.
+ * @param {{ pantry?: string[], offers: Map<string, Offer[]> }} options
+ */
 export function recommend({ pantry = [], offers }) {
   const owned = new Set(pantry);
   return RECIPES.map((recipe) => scoreRecipe(recipe, owned, offers))

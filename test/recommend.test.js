@@ -9,27 +9,51 @@ const now = new Date('2026-10-20T12:00:00-04:00');
 
 function flyer(id, store, validFrom, validTo, items) {
   return {
-    id, store, title: 'Circulaire', validFrom, validTo,
-    items: items.map(([name, price, discount], index) => toItem({ id: id * 100 + index, name, price: String(price), discount, display_type: 1 }, store)),
+    id,
+    store,
+    title: 'Circulaire',
+    validFrom,
+    validTo,
+    items: items.map(([name, price, discount], index) =>
+      toItem({ id: id * 100 + index, name, price: String(price), discount, display_type: 1 }, store),
+    ),
   };
 }
 
 const flyers = [
-  flyer(1, 'Maxi', '2026-10-15T00:00:00-04:00', '2026-10-21T23:59:59-04:00', [['POITRINES DE POULET', 4.99, 30], ['BROCOLI', 1.25, 40]]),
+  flyer(1, 'Maxi', '2026-10-15T00:00:00-04:00', '2026-10-21T23:59:59-04:00', [
+    ['POITRINES DE POULET', 4.99, 30],
+    ['BROCOLI', 1.25, 40],
+  ]),
   flyer(2, 'IGA', '2026-10-15T00:00:00-04:00', '2026-10-21T23:59:59-04:00', [['POITRINES DE POULET FRAIS', 3.99, 20]]),
   flyer(3, 'IGA', '2026-10-22T00:00:00-04:00', '2026-10-28T23:59:59-04:00', [['BOEUF HACHÉ MAIGRE', 5.44, 25]]),
 ];
 
 test('splits flyers into this week and next week', () => {
-  assert.deepEqual(flyersForWeek(flyers, 'current', now).map((f) => f.id), [1, 2]);
-  assert.deepEqual(flyersForWeek(flyers, 'next', now).map((f) => f.id), [3]);
+  assert.deepEqual(
+    flyersForWeek(flyers, 'current', now).map((f) => f.id),
+    [1, 2],
+  );
+  assert.deepEqual(
+    flyersForWeek(flyers, 'next', now).map((f) => f.id),
+    [3],
+  );
   // On Thursday, next week's flyer becomes the current one without a refetch.
-  assert.deepEqual(flyersForWeek(flyers, 'current', new Date('2026-10-22T09:00:00-04:00')).map((f) => f.id), [3]);
+  assert.deepEqual(
+    flyersForWeek(flyers, 'current', new Date('2026-10-22T09:00:00-04:00')).map((f) => f.id),
+    [3],
+  );
 });
 
 test('offers are sorted cheapest first across stores', () => {
   const { offers } = buildWeek(flyers, 'current', now);
-  assert.deepEqual(offers.get('poulet_poitrine').map((o) => [o.store, o.price]), [['IGA', 3.99], ['Maxi', 4.99]]);
+  assert.deepEqual(
+    offers.get('poulet_poitrine').map((o) => [o.store, o.price]),
+    [
+      ['IGA', 3.99],
+      ['Maxi', 4.99],
+    ],
+  );
 });
 
 test('marks each ingredient as on sale, already owned or to buy, and prices it', () => {
@@ -55,13 +79,19 @@ test('lists recipes from cheapest to most expensive', () => {
   const { offers } = buildWeek(flyers, 'current', now);
   const costs = recommend({ pantry: [], offers }).map((recipe) => recipe.totalCost);
   assert.ok(costs.length > 1);
-  assert.deepEqual(costs, [...costs].sort((a, b) => a - b));
+  assert.deepEqual(
+    costs,
+    [...costs].sort((a, b) => a - b),
+  );
 });
 
 test('skips banners and items without a price', () => {
   assert.equal(toItem({ id: 1, name: 'Maxi coupons', price: '', display_type: 5 }, 'Maxi'), null);
   assert.equal(toItem({ id: 2, name: 'DUO DE PAINS', price: '', display_type: 1 }, 'Maxi'), null);
-  assert.equal(toItem({ id: 3, name: 'vinaigrette Kraft | Kraft salad dressing', price: '2.99', display_type: 1 }, 'Super C').name, 'vinaigrette Kraft');
+  assert.equal(
+    toItem({ id: 3, name: 'vinaigrette Kraft | Kraft salad dressing', price: '2.99', display_type: 1 }, 'Super C').name,
+    'vinaigrette Kraft',
+  );
 });
 
 test('every recommendation carries an emoji and a colour theme for the UI', () => {

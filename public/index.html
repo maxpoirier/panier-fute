@@ -1,128 +1,147 @@
 <!doctype html>
 <html lang="fr-CA">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Le panier futé de Max</title>
-  <meta name="theme-color" content="#e8553e">
-  <!-- Personal tool: keep it out of search engines. -->
-  <meta name="robots" content="noindex, nofollow">
-  <meta name="description" content="Les rabais d’IGA, Super C, Maxi et Walmart transformés en recettes, du moins cher au plus cher.">
-  <link rel="manifest" href="manifest.webmanifest">
-  <link rel="icon" href="icons/icon-192.png" type="image/png">
-  <link rel="apple-touch-icon" href="icons/icon-192.png">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&family=Fraunces:opsz,wght@9..144,600;9..144,800&display=swap">
-  <link rel="stylesheet" href="styles.css">
-</head>
-<body>
-  <header class="hero">
-    <div class="hero-decor" aria-hidden="true">
-      <span>🥕</span><span>🍅</span><span>🧀</span><span>🥖</span><span>🍗</span><span>🥦</span><span>🍋</span><span>🌽</span>
-    </div>
-    <div class="wrap hero-inner">
-      <div class="hero-top">
-        <div>
-          <button id="hello" class="hello" type="button" title="Changer de prénom">Salut! 👋</button>
-          <h1>Le panier futé <span>de Max</span></h1>
-          <p class="tagline">Les rabais d’IGA, Super C, Maxi et Walmart transformés en bons petits plats.</p>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Le panier futé de Max</title>
+    <meta name="theme-color" content="#e8553e" />
+    <!-- Personal tool: keep it out of search engines. -->
+    <meta name="robots" content="noindex, nofollow" />
+    <!-- Only this site's own files, Flipp's API and its product photos. -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self'; font-src 'self'; img-src 'self' https://f.wishabi.net; connect-src 'self' https://backflipp.wishabi.com; manifest-src 'self'; worker-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'"
+    />
+    <meta name="description" content="Les rabais d’IGA, Super C, Maxi et Walmart transformés en recettes, du moins cher au plus cher." />
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="icon" href="icons/icon-192.png" type="image/png" />
+    <link rel="apple-touch-icon" href="icons/icon-192.png" />
+    <link rel="preload" href="fonts/dm-sans-latin.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="hero">
+      <div class="hero-decor" aria-hidden="true">
+        <span>🥕</span><span>🍅</span><span>🧀</span><span>🥖</span><span>🍗</span><span>🥦</span><span>🍋</span><span>🌽</span>
+      </div>
+      <div class="wrap hero-inner">
+        <div class="hero-top">
+          <div>
+            <button id="hello" class="hello" type="button" title="Changer de prénom">Salut! 👋</button>
+            <h1>Le panier futé <span>de Max</span></h1>
+            <p class="tagline">Les rabais d’IGA, Super C, Maxi et Walmart transformés en bons petits plats.</p>
+          </div>
+          <div class="status">
+            <p id="status-text">Chargement…</p>
+            <form id="postal-form" class="postal-form">
+              <label for="postal-input">Code postal</label>
+              <input id="postal-input" name="postal" autocomplete="postal-code" maxlength="7" placeholder="G2G 1B8" />
+              <button class="btn light" type="submit">OK</button>
+            </form>
+            <button id="refresh-btn" class="btn light" type="button" title="Rafraîchir les circulaires">
+              ↻<span class="label"> Rafraîchir les circulaires</span>
+            </button>
+          </div>
         </div>
-        <div class="status">
-          <p id="status-text">Chargement…</p>
-          <form id="postal-form" class="postal-form">
-            <label for="postal-input">Code postal</label>
-            <input id="postal-input" name="postal" autocomplete="postal-code" maxlength="7" placeholder="G2G 1B8">
-            <button class="btn light" type="submit">OK</button>
-          </form>
-          <button id="refresh-btn" class="btn light" type="button" title="Rafraîchir les circulaires">↻<span class="label"> Rafraîchir les circulaires</span></button>
+        <div id="stats" class="stats"></div>
+      </div>
+    </header>
+
+    <main class="wrap">
+      <section id="pantry" class="panel">
+        <div class="panel-head">
+          <div>
+            <h2>
+              <span class="step">1</span> <span>Qu’as-tu déjà à la maison<span class="user-name-suffix"></span>?</span>
+            </h2>
+            <p class="hint">Touche ce que tu as déjà. Ces ingrédients comptent pour 0 $ dans les recettes.</p>
+          </div>
+          <div class="actions">
+            <span id="pantry-count" class="counter"></span>
+            <button id="pantry-common" class="btn" type="button">✨ Cocher les essentiels</button>
+            <button id="pantry-clear" class="btn ghost" type="button">Tout décocher</button>
+          </div>
         </div>
-      </div>
-      <div id="stats" class="stats"></div>
-    </div>
-  </header>
+        <div id="pantry-groups" class="pantry-groups"></div>
+        <a id="to-recipes" class="btn to-recipes" href="#recettes">Voir les recettes →</a>
+      </section>
 
-  <main class="wrap">
-    <section id="pantry" class="panel">
-      <div class="panel-head">
-        <div>
-          <h2><span class="step">1</span> <span>Qu’as-tu déjà à la maison<span class="user-name-suffix"></span>?</span></h2>
-          <p class="hint">Touche ce que tu as déjà. Ces ingrédients comptent pour 0 $ dans les recettes.</p>
+      <section id="plan" class="panel">
+        <div class="panel-head">
+          <h2><span class="step">2</span> Recettes du moins cher au plus cher</h2>
+          <div class="filters">
+            <label class="filter"
+              >Trier par
+              <select id="sort-by">
+                <option value="total">Prix total (moins cher d’abord)</option>
+                <option value="serving">Prix par portion</option>
+                <option value="score">Meilleures aubaines</option>
+              </select>
+            </label>
+            <label class="filter"
+              >Au prix régulier, max
+              <select id="max-buy">
+                <option value="99">peu importe</option>
+                <option value="0">0 ingrédient</option>
+                <option value="1">1 ingrédient</option>
+                <option value="2" selected>2 ingrédients</option>
+                <option value="3">3 ingrédients</option>
+              </select>
+            </label>
+          </div>
         </div>
-        <div class="actions">
-          <span id="pantry-count" class="counter"></span>
-          <button id="pantry-common" class="btn" type="button">✨ Cocher les essentiels</button>
-          <button id="pantry-clear" class="btn ghost" type="button">Tout décocher</button>
+        <div class="tabs" role="tablist">
+          <button role="tab" class="tab" id="tab-current" data-week="current" aria-selected="true" aria-controls="recipes">
+            Cette semaine
+          </button>
+          <button role="tab" class="tab" id="tab-next" data-week="next" aria-selected="false" aria-controls="recipes" tabindex="-1">
+            Semaine prochaine
+          </button>
         </div>
-      </div>
-      <div id="pantry-groups" class="pantry-groups"></div>
-      <a id="to-recipes" class="btn to-recipes" href="#recettes">Voir les recettes →</a>
-    </section>
+        <div id="week-stores" class="week-stores" role="region" aria-label="Circulaires de la semaine" tabindex="0"></div>
+        <p class="hint">
+          Prix estimé = prix en circulaire pour ce qui est en rabais + prix régulier approximatif pour le reste. Ce que tu as déjà compte
+          pour 0 $.
+        </p>
+        <div class="legend"><span>🏷️ en rabais</span><span>✅ tu l’as</span><span>🛒 prix régulier</span><span>➕ facultatif</span></div>
+        <div id="recipes" class="recipes" role="tabpanel" aria-live="polite"></div>
+      </section>
 
-    <section id="plan" class="panel">
-      <div class="panel-head">
-        <h2><span class="step">2</span> Recettes du moins cher au plus cher</h2>
-        <div class="filters">
-          <label class="filter">Trier par
-            <select id="sort-by">
-              <option value="total">Prix total (moins cher d’abord)</option>
-              <option value="serving">Prix par portion</option>
-              <option value="score">Meilleures aubaines</option>
-            </select>
-          </label>
-          <label class="filter">Au prix régulier, max
-            <select id="max-buy">
-              <option value="99">peu importe</option>
-              <option value="0">0 ingrédient</option>
-              <option value="1">1 ingrédient</option>
-              <option value="2" selected>2 ingrédients</option>
-              <option value="3">3 ingrédients</option>
-            </select>
-          </label>
+      <section id="deals" class="panel">
+        <div class="panel-head">
+          <h2><span class="step">3</span> Meilleurs prix, épicerie par épicerie</h2>
+          <input id="deal-search" type="search" placeholder="🔎 Filtrer (ex. poulet, brocoli)…" aria-label="Filtrer les aubaines" />
         </div>
-      </div>
-      <div class="tabs" role="tablist">
-        <button role="tab" class="tab" data-week="current" aria-selected="true">Cette semaine</button>
-        <button role="tab" class="tab" data-week="next" aria-selected="false">Semaine prochaine</button>
-      </div>
-      <div id="week-stores" class="week-stores"></div>
-      <p class="hint">Prix estimé = prix en circulaire pour ce qui est en rabais + prix régulier approximatif pour le reste. Ce que tu as déjà compte pour 0 $.</p>
-      <div class="legend">
-        <span>🏷️ en rabais</span><span>✅ tu l’as</span><span>🛒 prix régulier</span><span>➕ facultatif</span>
-      </div>
-      <div id="recipes" class="recipes"></div>
-    </section>
+        <p class="hint">
+          Prix tels qu’affichés dans les circulaires. Certaines chaînes affichent le prix à la livre, d’autres au paquet : vérifie le format
+          avant de comparer. 🏆 = le moins cher.
+        </p>
+        <div class="table-scroll" role="region" aria-label="Tableau des prix" tabindex="0"><table id="deals-table"></table></div>
+      </section>
+    </main>
 
-    <section id="deals" class="panel">
-      <div class="panel-head">
-        <h2><span class="step">3</span> Meilleurs prix, épicerie par épicerie</h2>
-        <input id="deal-search" type="search" placeholder="🔎 Filtrer (ex. poulet, brocoli)…" aria-label="Filtrer les aubaines">
+    <nav class="tabbar" aria-label="Sections">
+      <a href="#garde-manger" data-screen="garde-manger"><span class="icon" aria-hidden="true">🥫</span>Garde-manger</a>
+      <a href="#recettes" data-screen="recettes"><span class="icon" aria-hidden="true">🍽️</span>Recettes</a>
+      <a href="#prix" data-screen="prix"><span class="icon" aria-hidden="true">🏷️</span>Prix</a>
+      <button id="tab-list" type="button">
+        <span class="icon" aria-hidden="true">🛒</span>Liste<span id="tab-list-count" class="count" hidden>0</span>
+      </button>
+    </nav>
+
+    <button id="list-fab" class="list-fab" type="button" hidden>🛒 Ma liste <span id="list-count">0</span></button>
+    <dialog id="list-dialog">
+      <form method="dialog" class="dialog-head">
+        <h2 id="list-title">🛒 Ma liste d’épicerie</h2>
+        <button class="btn ghost" aria-label="Fermer">✕</button>
+      </form>
+      <div id="list-body"></div>
+      <div class="dialog-actions">
+        <button id="list-copy" class="btn" type="button">📋 Copier la liste</button>
+        <button id="list-clear" class="btn ghost" type="button">Vider</button>
       </div>
-      <p class="hint">Prix tels qu’affichés dans les circulaires. Certaines chaînes affichent le prix à la livre, d’autres au paquet : vérifie le format avant de comparer. 🏆 = le moins cher.</p>
-      <div class="table-scroll"><table id="deals-table"></table></div>
-    </section>
-  </main>
+    </dialog>
 
-  <nav class="tabbar" aria-label="Sections">
-    <a href="#garde-manger" data-screen="garde-manger"><span class="icon" aria-hidden="true">🥫</span>Garde-manger</a>
-    <a href="#recettes" data-screen="recettes"><span class="icon" aria-hidden="true">🍽️</span>Recettes</a>
-    <a href="#prix" data-screen="prix"><span class="icon" aria-hidden="true">🏷️</span>Prix</a>
-    <button id="tab-list" type="button"><span class="icon" aria-hidden="true">🛒</span>Liste<span id="tab-list-count" class="count" hidden>0</span></button>
-  </nav>
-
-  <button id="list-fab" class="list-fab" type="button" hidden>🛒 Ma liste <span id="list-count">0</span></button>
-  <dialog id="list-dialog">
-    <form method="dialog" class="dialog-head">
-      <h2 id="list-title">🛒 Ma liste d’épicerie</h2>
-      <button class="btn ghost" aria-label="Fermer">✕</button>
-    </form>
-    <div id="list-body"></div>
-    <div class="dialog-actions">
-      <button id="list-copy" class="btn" type="button">📋 Copier la liste</button>
-      <button id="list-clear" class="btn ghost" type="button">Vider</button>
-    </div>
-  </dialog>
-
-  <script type="module" src="app.js"></script>
-</body>
+    <script type="module" src="app.js"></script>
+  </body>
 </html>

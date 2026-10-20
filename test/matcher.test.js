@@ -19,7 +19,7 @@ test('matches real flyer names to ingredients', () => {
 });
 
 test('ignores look-alikes that are not the ingredient', () => {
-  assert.deepEqual(match('BOUILLON CAMPBELL\'S'), ['bouillon_poulet', 'bouillon_boeuf', 'bouillon_legumes']);
+  assert.deepEqual(match("BOUILLON CAMPBELL'S"), ['bouillon_poulet', 'bouillon_boeuf', 'bouillon_legumes']);
   assert.deepEqual(match('salade césar au poulet'), []);
   assert.deepEqual(match('laitue duo Gen V | butter lettuce'), ['laitue']);
   assert.deepEqual(match('Fond de teint Fit Me'), []);
@@ -42,7 +42,7 @@ test('tells pasta shapes, butters, rice and pork cuts apart', () => {
   assert.deepEqual(match('RIZ DAINTY'), ['riz_blanc']);
   assert.deepEqual(match('CÔTELETTES DE LONGE DE PORC FRAIS'), ['porc_cotelettes']);
   assert.deepEqual(match('FILETS DE PORC FRAIS'), ['porc_filet']);
-  assert.deepEqual(match('MOUTARDE PRÉPARÉE FRENCH\'S'), ['moutarde_jaune']);
+  assert.deepEqual(match("MOUTARDE PRÉPARÉE FRENCH'S"), ['moutarde_jaune']);
   assert.deepEqual(match('VINAIGRE BLANC PUR SANS NOM'), ['vinaigre_blanc']);
   assert.deepEqual(match('SUSHI À LA MAISON RICE VINEGAR'), ['vinaigre_riz']);
 });
@@ -54,7 +54,10 @@ test('every recipe ingredient and substitute exists in the catalogue', () => {
         assert.ok(INGREDIENTS_BY_ID.has(candidate), `${recipe.id} uses unknown ingredient ${candidate}`);
       }
     }
-    assert.ok(recipe.ingredients.some((entry) => entry.main), `${recipe.id} has no main ingredient`);
+    assert.ok(
+      recipe.ingredients.some((entry) => entry.main),
+      `${recipe.id} has no main ingredient`,
+    );
   }
 });
 

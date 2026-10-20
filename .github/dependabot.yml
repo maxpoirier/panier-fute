@@ -1,0 +1,19 @@
+# Weekly update PRs, checked by the CI before anything is merged. The cooldown skips releases younger than two weeks,
+# which leaves time for a broken or compromised release to be pulled.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 14
+    groups:
+      dev-tools:
+        dependency-type: development
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 14
