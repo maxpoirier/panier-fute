@@ -15,6 +15,8 @@ const CATEGORY_EMOJI = {
 const STORE_LABEL = { IGA: 'IGA', 'Super C': 'SC', Maxi: 'MAXI', Walmart: 'W' };
 const STATUS_ICON = { deal: '🏷️', have: '✅', buy: '🛒', optional: '➕' };
 const MEDALS = ['🥇 Le moins cher', '🥈 2e moins cher', '🥉 3e moins cher'];
+// On phones each section is its own screen, picked by the URL hash so Android's back button works.
+const SCREENS = ['garde-manger', 'recettes', 'prix'];
 
 const state = {
   status: null,
@@ -298,6 +300,7 @@ function renderRecipes() {
       'Aucune recette ne correspond. Coche plus d’ingrédients que tu as, ou accepte plus d’ingrédients au prix régulier.'));
     return;
   }
+  $('#to-recipes').textContent = `Voir les ${visible.length} recettes →`;
   const showMedal = $('#sort-by').value !== 'score';
   container.replaceChildren(...visible.map((recipe, index) => recipeCard(recipe, index, showMedal)));
 }
@@ -378,6 +381,12 @@ function buildList() {
 function renderList() {
   $('#list-count').textContent = state.list.size;
   $('#list-fab').hidden = state.list.size === 0;
+  $('#tab-list-count').textContent = state.list.size;
+  $('#tab-list-count').hidden = state.list.size === 0;
+  if (state.list.size === 0) {
+    $('#list-body').replaceChildren(el('p', { class: 'hint', text: 'Ta liste est vide. Ajoute des recettes avec « + Ma liste ».' }));
+    return;
+  }
   const missing = [...state.list.entries()].filter(([id]) => !state.recipes.some((recipe) => recipe.id === id));
   const { byStore, total } = buildList();
   $('#list-body').replaceChildren(...compact([
@@ -402,6 +411,19 @@ function listAsText() {
   }
   lines.push('', `Total estimé : ${money.format(total)}`);
   return lines.join('\n');
+}
+
+// ---------- Screens (phone layout) ----------
+
+function showScreen() {
+  const requested = location.hash.slice(1);
+  const screen = SCREENS.includes(requested) ? requested : SCREENS[0];
+  const changed = document.body.dataset.screen !== screen;
+  document.body.dataset.screen = screen;
+  for (const tab of document.querySelectorAll('.tabbar [data-screen]')) {
+    tab.setAttribute('aria-current', tab.dataset.screen === screen ? 'page' : 'false');
+  }
+  if (changed) window.scrollTo(0, 0);
 }
 
 // ---------- Wiring ----------
@@ -455,6 +477,8 @@ function wire() {
     syncFlyers();
   });
   $('#list-fab').addEventListener('click', () => $('#list-dialog').showModal());
+  $('#tab-list').addEventListener('click', () => $('#list-dialog').showModal());
+  window.addEventListener('hashchange', showScreen);
   $('#list-copy').addEventListener('click', async () => {
     await navigator.clipboard.writeText(listAsText());
     $('#list-copy').textContent = '✓ Copiée!';
@@ -470,6 +494,7 @@ function wire() {
 
 function init() {
   wire();
+  showScreen();
   for (const key of RETIRED_KEYS) {
     try {
       localStorage.removeItem(key);

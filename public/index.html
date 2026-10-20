@@ -2,7 +2,7 @@
 <html lang="fr-CA">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Le panier futé de Max</title>
   <meta name="theme-color" content="#e8553e">
   <!-- Personal tool: keep it out of search engines. -->
@@ -35,7 +35,7 @@
             <input id="postal-input" name="postal" autocomplete="postal-code" maxlength="7" placeholder="G2G 1B8">
             <button class="btn light" type="submit">OK</button>
           </form>
-          <button id="refresh-btn" class="btn light" type="button">↻ Rafraîchir les circulaires</button>
+          <button id="refresh-btn" class="btn light" type="button" title="Rafraîchir les circulaires">↻<span class="label"> Rafraîchir les circulaires</span></button>
         </div>
       </div>
       <div id="stats" class="stats"></div>
@@ -56,6 +56,7 @@
         </div>
       </div>
       <div id="pantry-groups" class="pantry-groups"></div>
+      <a id="to-recipes" class="btn to-recipes" href="#recettes">Voir les recettes →</a>
     </section>
 
     <section id="plan" class="panel">
@@ -101,6 +102,13 @@
       <div class="table-scroll"><table id="deals-table"></table></div>
     </section>
   </main>
+
+  <nav class="tabbar" aria-label="Sections">
+    <a href="#garde-manger" data-screen="garde-manger"><span class="icon" aria-hidden="true">🥫</span>Garde-manger</a>
+    <a href="#recettes" data-screen="recettes"><span class="icon" aria-hidden="true">🍽️</span>Recettes</a>
+    <a href="#prix" data-screen="prix"><span class="icon" aria-hidden="true">🏷️</span>Prix</a>
+    <button id="tab-list" type="button"><span class="icon" aria-hidden="true">🛒</span>Liste<span id="tab-list-count" class="count" hidden>0</span></button>
+  </nav>
 
   <button id="list-fab" class="list-fab" type="button" hidden>🛒 Ma liste <span id="list-count">0</span></button>
   <dialog id="list-dialog">

@@ -344,6 +344,63 @@ main { padding-bottom: 90px; }
   .hero { border-radius: 0 0 24px 24px; }
 }
 
+/* ---------- Phone layout: one screen per section, tab bar at the bottom ---------- */
+
+.tabbar, .to-recipes { display: none; }
+
+@media (max-width: 760px) {
+  main > section { display: none; }
+  body[data-screen="garde-manger"] #pantry,
+  body[data-screen="recettes"] #plan,
+  body[data-screen="prix"] #deals { display: block; animation: rise 0.3s ease both; }
+  main { padding-bottom: calc(96px + env(safe-area-inset-bottom)); }
+
+  .hero { margin-bottom: 16px; border-radius: 0 0 24px 24px; }
+  .hero-inner { padding-top: calc(14px + env(safe-area-inset-top)); padding-bottom: 16px; }
+  .hello, .tagline, .hero-decor { display: none; }
+  h1 { font-size: 1.7rem; }
+  .hero-top { gap: 10px; }
+  .status { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; }
+  .status p { flex-basis: 100%; margin: 0; }
+  .postal-form { margin: 0; }
+  #refresh-btn { padding: 6px 12px; }
+  #refresh-btn .label { display: none; }
+
+  .stats { margin-top: 12px; gap: 8px; }
+  .stat { padding: 8px 10px; gap: 8px; border-radius: 14px; }
+  .stat .icon { font-size: 1.2rem; }
+  .stat strong { font-size: 1.05rem; }
+  .stat small { font-size: 0.7rem; line-height: 1.2; display: block; }
+
+  .tabs { display: grid; grid-template-columns: 1fr 1fr; width: 100%; }
+  .week-stores { flex-wrap: nowrap; overflow-x: auto; margin-left: -4px; margin-right: -4px; padding: 0 4px 4px; }
+  .store-pill { white-space: nowrap; flex: none; }
+  #plan > .hint { display: none; }
+  .tab { padding: 8px 6px; }
+  body:not([data-screen="recettes"]) .stats { display: none; }
+
+  .list-fab { display: none; }
+  .to-recipes { display: block; text-align: center; text-decoration: none; margin-top: 18px; padding: 14px; font-size: 1.05rem; }
+
+  .tabbar {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px;
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 10;
+    padding: 6px 8px calc(6px + env(safe-area-inset-bottom));
+    background: var(--surface); border-top: 1px solid var(--line); box-shadow: 0 -6px 20px rgb(0 0 0 / 0.08);
+  }
+  .tabbar a, .tabbar button {
+    position: relative; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 6px 0;
+    font: inherit; font-size: 0.72rem; font-weight: 700; color: var(--muted); text-decoration: none;
+    background: none; border: none; border-radius: 14px; cursor: pointer;
+  }
+  .tabbar .icon { font-size: 1.35rem; line-height: 1; }
+  .tabbar [aria-current="page"] { color: var(--tomato); background: var(--surface-2); }
+  .tabbar .count {
+    position: absolute; top: 0; left: calc(50% + 6px); min-width: 18px; padding: 0 5px; border-radius: 999px;
+    background: #1f7a45; color: #fff; font-size: 0.65rem; line-height: 18px;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
