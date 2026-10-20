@@ -4,7 +4,7 @@ import { matchIngredients } from './matcher.js';
 
 // Bump when the cached shape changes, or when the catalogue changes enough that cached items should be re-fetched.
 const CACHE_KEY = 'pfq.flyers.v2';
-// Flyers change weekly and next week's appear early in the week; a daily check catches them without hammering Flipp.
+// Used when the app isn't forcing a refresh (e.g. after a postal code change): a day-old cache is refetched.
 const STALE_AFTER_MS = 24 * 3600 * 1000;
 const PARALLEL_DOWNLOADS = 4;
 

@@ -1,5 +1,5 @@
 // Bump on every release: phones then show the "Nouvelle version disponible" screen and drop the old app files.
-const VERSION = 'v5';
+const VERSION = 'v6';
 const APP_CACHE = `panier-app-${VERSION}`;
 const IMAGE_CACHE = 'panier-images';
 

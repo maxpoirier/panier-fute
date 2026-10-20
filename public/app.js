@@ -155,9 +155,13 @@ function loadStatus() {
   renderStatus();
 }
 
-// Downloads the flyers when the cached ones are missing, for another postal code, or a day old.
+// An installed app is usually resumed rather than relaunched; coming back after this long counts as reopening it.
+const RESUME_REFRESH_AFTER_MS = 30 * 60 * 1000;
+
+// Downloads the flyers when forced (app opened, "Rafraîchir"), or when the cached ones are missing, for another postal code, or a day old.
+// Cached flyers stay on screen meanwhile, and flyers already downloaded are not fetched again.
 async function syncFlyers({ force = false } = {}) {
-  if (!force && !isStale(state.postalCode)) return;
+  if (state.refreshing || (!force && !isStale(state.postalCode))) return;
   state.refreshing = true;
   state.error = null;
   loadStatus();
@@ -505,7 +509,13 @@ function init() {
   loadStatus();
   renderPantry();
   selectWeek(state.week);
-  syncFlyers();
+  syncFlyers({ force: true });
+  document.addEventListener('visibilitychange', () => {
+    const fetchedAt = getSnapshot()?.fetchedAt;
+    if (document.visibilityState === 'visible' && (!fetchedAt || Date.now() - Date.parse(fetchedAt) > RESUME_REFRESH_AFTER_MS)) {
+      syncFlyers({ force: true });
+    }
+  });
 }
 
 init();
