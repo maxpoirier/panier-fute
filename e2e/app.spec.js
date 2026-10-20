@@ -157,3 +157,24 @@ test('coming back to the app keeps the recipe being read open when the flyers di
   await expect(steps).toHaveAttribute('open', '');
   await expect(steps).toHaveAttribute('data-marker', 'same-node');
 });
+
+for (const width of [412, 1280]) {
+  test(`shows the app version at the top right without covering anything (${width}px)`, async ({ page, context }) => {
+    await rememberName(context);
+    await mockFlipp(context);
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto(`${site.url}#recettes`);
+
+    const version = page.locator('#app-version');
+    await expect(version).toHaveText(/^v\d+\.\d+\.\d+$/);
+    const box = await version.boundingBox();
+    expect(box.y).toBeLessThan(40);
+    expect(box.x + box.width).toBeGreaterThan(width - 40);
+    for (const neighbour of ['#hello', '#status-text']) {
+      const other = await page.locator(neighbour).boundingBox();
+      const overlaps =
+        box.x < other.x + other.width && other.x < box.x + box.width && box.y < other.y + other.height && other.y < box.y + box.height;
+      expect(overlaps, `overlaps ${neighbour}`).toBe(false);
+    }
+  });
+}

@@ -1,6 +1,7 @@
 // @ts-check
 import { STORES } from '../lib/flipp.js';
 import { writePref } from '../lib/prefs.js';
+import { APP_VERSION } from '../version.js';
 import { $, el, formatPostalCode, longDate, money } from './dom.js';
 import { PREFS, state } from './state.js';
 
@@ -51,6 +52,12 @@ export function renderStats(visibleRecipes) {
       state.week === 'current' ? 'circulaires cette semaine' : 'circulaires la semaine prochaine',
     ),
   );
+}
+
+export function renderVersion() {
+  const version = $('#app-version');
+  version.textContent = `v${APP_VERSION}`;
+  version.setAttribute('aria-label', `Version ${APP_VERSION} de l’application`);
 }
 
 export function renderUserName() {

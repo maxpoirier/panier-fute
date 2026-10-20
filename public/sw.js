@@ -1,6 +1,6 @@
 // @ts-check
-// Replaced at deploy time by a hash of the app files (see .github/workflows/pages.yml), so every release that changes
-// the app shows phones the "Nouvelle version disponible" screen, and releases that don't change it (e.g. README) don't.
+// Replaced at deploy time by APP_VERSION from version.js (scripts/stamp-version.mjs): a new version number is what
+// shows phones the "Nouvelle version disponible" screen, and the deploy fails if app files change without one.
 const VERSION = 'dev';
 const APP_CACHE = `panier-app-${VERSION}`;
 const IMAGE_CACHE = 'panier-images';
@@ -22,6 +22,7 @@ const APP_FILES = [
   './index.html',
   './styles.css',
   './app.js',
+  './version.js',
   './manifest.webmanifest',
   './icons/icon-192.png',
   './icons/icon-512.png',
@@ -61,6 +62,8 @@ sw.addEventListener('install', (event) => {
 
 sw.addEventListener('message', (event) => {
   if (event.data === 'SKIP_WAITING') sw.skipWaiting();
+  // Lets the update screen show which version is about to be installed.
+  if (event.data === 'GET_VERSION') event.ports[0]?.postMessage(VERSION);
 });
 
 sw.addEventListener('activate', (event) => {

@@ -3,6 +3,7 @@ import { cp, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import express from 'express';
+import { appHash, stampVersion } from '../scripts/stamp-version.mjs';
 
 const PUBLIC = new URL('../public/', import.meta.url).pathname;
 // 1×1 transparent PNG standing in for product photos.
@@ -24,19 +25,25 @@ export async function startSite() {
   const swPath = join(dir, 'sw.js');
   const site = {
     url: `http://[::1]:${server.address().port}/`,
-    /** Same as a deploy: new version stamp, plus a marker so the test can tell which app.js is running. */
+    /**
+     * Same as a release: new number in version.js, then the deploy's stamping step. Also leaves a marker so the test
+     * can tell which app.js is running.
+     */
     async publish(version) {
-      const sw = await readFile(swPath, 'utf8');
-      await writeFile(swPath, sw.replace(/^const VERSION = '[^']*';$/m, `const VERSION = '${version}';`));
+      const versionPath = join(dir, 'version.js');
+      const source = await readFile(versionPath, 'utf8');
+      await writeFile(versionPath, source.replace(/APP_VERSION = '[^']*'/, `APP_VERSION = '${version}'`));
       const appPath = join(dir, 'app.js');
       await writeFile(appPath, `${await readFile(appPath, 'utf8')}\nwindow.appVersion = '${version}';\n`);
+      await writeFile(swPath, (await readFile(swPath, 'utf8')).replace(/^const VERSION = '[^']*';$/m, "const VERSION = 'dev';"));
+      await stampVersion(dir, version, await appHash(dir));
     },
     async close() {
       await new Promise((resolve) => server.close(resolve));
       await rm(dir, { recursive: true, force: true });
     },
   };
-  await site.publish('A');
+  await site.publish('1.0.0');
   return site;
 }
 

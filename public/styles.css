@@ -106,6 +106,20 @@ body {
   margin-bottom: 28px;
   border-radius: 0 0 36px 36px;
 }
+/* Small and out of the way, top right of the header on every screen size. */
+.app-version {
+  position: absolute;
+  top: calc(8px + env(safe-area-inset-top));
+  right: 16px;
+  z-index: 1;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgb(0 0 0 / 0.22);
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
 .hero-inner {
   position: relative;
   padding-top: 32px;
@@ -1117,6 +1131,12 @@ main {
   width: 88px;
   height: 88px;
   border-radius: 22px;
+}
+.update-card .update-versions {
+  margin: 0 0 8px;
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: var(--accent-text);
 }
 .update-btn {
   width: 100%;

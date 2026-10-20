@@ -6,7 +6,7 @@ import { recommend } from './lib/recommend.js';
 import { getSnapshot, getWeek, isStale, refresh } from './lib/store.js';
 import { watchForUpdates } from './pwa/updates.js';
 import { dealsFrom, renderDeals, wireDeals } from './ui/deals.js';
-import { renderStats, renderStatus, renderUserName, wireHeader } from './ui/header.js';
+import { renderStats, renderStatus, renderUserName, renderVersion, wireHeader } from './ui/header.js';
 import { bumpListButton, renderList, wireList } from './ui/list.js';
 import { renderPantry, wirePantry } from './ui/pantry.js';
 import { renderRecipes, visibleRecipes, wireRecipeFilters } from './ui/recipes.js';
@@ -142,6 +142,7 @@ function init() {
   wireList(clearList);
 
   loadStatus();
+  renderVersion();
   renderUserName();
   renderPantry(scheduleRecipes);
   selectWeek(state.week);

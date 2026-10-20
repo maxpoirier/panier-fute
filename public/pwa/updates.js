@@ -1,6 +1,7 @@
 // @ts-check
 import { $, el } from '../ui/dom.js';
 import { closeOverlay, showOverlay } from '../ui/overlays.js';
+import { APP_VERSION } from '../version.js';
 
 /** @type {HTMLElement | null} */
 let screen = null;
@@ -17,6 +18,23 @@ function setButton(ready) {
   if (ready) button.focus();
 }
 
+/**
+ * The version the new service worker carries (stamped from version.js at deploy), or null if it doesn't answer.
+ * @param {ServiceWorker} worker
+ * @returns {Promise<string | null>}
+ */
+function versionOf(worker) {
+  return new Promise((resolve) => {
+    const channel = new MessageChannel();
+    const timeout = setTimeout(() => resolve(null), 3000);
+    channel.port1.onmessage = (event) => {
+      clearTimeout(timeout);
+      resolve(typeof event.data === 'string' ? event.data : null);
+    };
+    worker.postMessage('GET_VERSION', [channel.port2]);
+  });
+}
+
 // Blocks the app as soon as a new version is detected; the button unlocks once it's downloaded. There is no way to dismiss it.
 /** @param {ServiceWorker} worker */
 function showUpdateScreen(worker) {
@@ -30,6 +48,7 @@ function showUpdateScreen(worker) {
         { class: 'update-card' },
         el('img', { class: 'update-icon', src: 'icons/icon-192.png', alt: '' }),
         el('h2', { id: 'update-title', text: 'Nouvelle version disponible 🎉' }),
+        el('p', { id: 'update-versions', class: 'update-versions', text: `v${APP_VERSION}` }),
         el('p', { text: 'Une mise à jour du panier futé est disponible. Installe-la pour continuer.' }),
         el('button', {
           type: 'button',
@@ -47,6 +66,9 @@ function showUpdateScreen(worker) {
     showOverlay(screen);
   }
   setButton(worker.state === 'installed');
+  versionOf(worker).then((next) => {
+    if (next && pendingWorker === worker) $('#update-versions').textContent = `v${APP_VERSION} → v${next}`;
+  });
 }
 
 // Only used when the download fails: the installed version keeps working until the next check.

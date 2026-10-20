@@ -35,10 +35,19 @@ Locally the browser tests use your installed Chrome; CI installs Chromium.
 Push to `main`. `.github/workflows/pages.yml` runs every check, then publishes `public/` to GitHub Pages. Nothing is
 published if a check fails. Pull requests run the checks without publishing.
 
-There is no version number to bump: the deploy stamps `VERSION` in `sw.js` with a hash of the app files
-(`scripts/stamp-version.mjs`). When an app file changed, the next time someone opens the app online, or brings it back
-to the screen, they get a blocking "Nouvelle version disponible" screen with a single **Installer la mise à jour** button.
-A push that doesn't touch `public/` (e.g. this README) prompts nobody.
+### Releasing a new version
+
+1. Change the app, and **bump the version** in `public/version.js` and `package.json` (a test fails if they differ).
+2. Push to `main`.
+
+That single number is what the user sees at the top right of the app (e.g. `v1.2.0`) **and** what the deploy writes
+into the service worker (`scripts/stamp-version.mjs`). A new number is what makes phones show the blocking
+"Nouvelle version disponible : v1.1.0 → v1.2.0" screen. The installed app keeps running its version until the user taps
+**Installer la mise à jour**.
+
+Forgetting the bump can't slip through: the deploy compares a fingerprint of `public/` with `build.json` on the live
+site and **fails** if app files changed under a version that is already published. A push that doesn't touch `public/`
+(e.g. this README) deploys without a bump and prompts nobody.
 
 If you add a file to `public/`, add it to `APP_FILES` in `public/sw.js`; a test fails until you do.
 
