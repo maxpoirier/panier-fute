@@ -155,9 +155,6 @@ function loadStatus() {
   renderStatus();
 }
 
-// An installed app is usually resumed rather than relaunched; coming back after this long counts as reopening it.
-const RESUME_REFRESH_AFTER_MS = 30 * 60 * 1000;
-
 // Downloads the flyers when forced (app opened, "Rafraîchir"), or when the cached ones are missing, for another postal code, or a day old.
 // Cached flyers stay on screen meanwhile, and flyers already downloaded are not fetched again.
 async function syncFlyers({ force = false } = {}) {
@@ -511,68 +508,104 @@ function init() {
   selectWeek(state.week);
   syncFlyers({ force: true });
   document.addEventListener('visibilitychange', () => {
-    const fetchedAt = getSnapshot()?.fetchedAt;
-    if (document.visibilityState === 'visible' && (!fetchedAt || Date.now() - Date.parse(fetchedAt) > RESUME_REFRESH_AFTER_MS)) {
-      syncFlyers({ force: true });
-    }
+    if (document.visibilityState === 'visible') onAppReopened();
   });
+  // Pages restored from Chrome's back-forward cache don't run any script again.
+  window.addEventListener('pageshow', (event) => {
+    if (event.persisted) onAppReopened();
+  });
+}
+
+// ---------- Reopening ----------
+
+// Android resumes an installed app instead of relaunching it, so coming back to it counts as opening it.
+// The guard only absorbs the duplicate events a single return can fire.
+const REOPEN_GUARD_MS = 60 * 1000;
+let lastOpenedAt = Date.now();
+let checkForUpdate = () => {};
+
+function onAppReopened() {
+  if (Date.now() - lastOpenedAt < REOPEN_GUARD_MS) return;
+  lastOpenedAt = Date.now();
+  checkForUpdate();
+  syncFlyers({ force: true });
 }
 
 init();
 
 // ---------- App updates ----------
 
-// Blocks the app until the new version is installed: there is no way to dismiss this screen.
+const BLOCKED_REGIONS = 'header, main, nav, dialog, .list-fab';
+let pendingWorker = null;
+let installRequested = false;
+
+function setUpdateButton(ready) {
+  const button = $('#update-screen button');
+  button.disabled = !ready;
+  button.textContent = ready ? 'Installer la mise à jour' : 'Téléchargement de la mise à jour…';
+  if (ready) button.focus();
+}
+
+// Blocks the app as soon as a new version is detected; the button unlocks once it's downloaded. There is no way to dismiss it.
 function showUpdateScreen(worker) {
-  if ($('#update-screen')) return;
-  for (const region of document.querySelectorAll('header, main, nav, dialog, .list-fab')) region.inert = true;
-  document.body.append(el('div', { id: 'update-screen', class: 'update-screen', role: 'alertdialog', 'aria-modal': 'true', 'aria-labelledby': 'update-title' },
-    el('div', { class: 'update-card' },
-      el('img', { class: 'update-icon', src: 'icons/icon-192.png', alt: '' }),
-      el('h2', { id: 'update-title', text: 'Nouvelle version disponible 🎉' }),
-      el('p', { text: 'Une mise à jour du panier futé est prête. Installe-la pour continuer.' }),
-      el('button', {
-        type: 'button',
-        class: 'btn update-btn',
-        text: 'Installer la mise à jour',
-        onclick: (event) => {
-          event.currentTarget.disabled = true;
-          event.currentTarget.textContent = 'Installation…';
-          worker.postMessage('SKIP_WAITING');
-        },
-      }))));
-  $('#update-screen button').focus();
+  pendingWorker = worker;
+  if (!$('#update-screen')) {
+    for (const region of document.querySelectorAll(BLOCKED_REGIONS)) region.inert = true;
+    document.body.append(el('div', { id: 'update-screen', class: 'update-screen', role: 'alertdialog', 'aria-modal': 'true', 'aria-labelledby': 'update-title' },
+      el('div', { class: 'update-card' },
+        el('img', { class: 'update-icon', src: 'icons/icon-192.png', alt: '' }),
+        el('h2', { id: 'update-title', text: 'Nouvelle version disponible 🎉' }),
+        el('p', { text: 'Une mise à jour du panier futé est disponible. Installe-la pour continuer.' }),
+        el('button', {
+          type: 'button',
+          class: 'btn update-btn',
+          onclick: (event) => {
+            event.currentTarget.disabled = true;
+            event.currentTarget.textContent = 'Installation…';
+            installRequested = true;
+            pendingWorker.postMessage('SKIP_WAITING');
+          },
+        }))));
+  }
+  setUpdateButton(worker.state === 'installed');
+}
+
+// Only used when the download fails: the installed version keeps working until the next check.
+function hideUpdateScreen() {
+  $('#update-screen')?.remove();
+  for (const region of document.querySelectorAll(BLOCKED_REGIONS)) region.inert = false;
+  pendingWorker = null;
 }
 
 // Makes the site installable as an Android app, usable offline, and checks for new versions.
 async function watchForUpdates() {
   // Locally, files change on every save; the cache-first service worker would only get in the way.
   if (!('serviceWorker' in navigator) || ['localhost', '127.0.0.1'].includes(location.hostname)) return;
-  const hadController = Boolean(navigator.serviceWorker.controller);
   const registration = await navigator.serviceWorker.register('./sw.js');
 
   let reloading = false;
   navigator.serviceWorker.addEventListener('controllerchange', () => {
-    // On a first install the worker takes control without a new version to load.
-    if (!hadController || reloading) return;
+    // A first install also takes control, but there's no new version to load then.
+    if (!installRequested || reloading) return;
     reloading = true;
     location.reload();
   });
 
-  const offer = (worker) => {
-    if (worker && navigator.serviceWorker.controller) showUpdateScreen(worker);
-  };
-  offer(registration.waiting);
-  registration.addEventListener('updatefound', () => {
-    const worker = registration.installing;
+  const track = (worker) => {
+    // Without a controller this is the first install, not an update.
+    if (!worker || !navigator.serviceWorker.controller) return;
+    showUpdateScreen(worker);
     worker.addEventListener('statechange', () => {
-      if (worker.state === 'installed') offer(worker);
+      if (worker.state === 'installed' && pendingWorker === worker) setUpdateButton(true);
+      if (worker.state === 'redundant' && pendingWorker === worker) {
+        hideUpdateScreen();
+        track(registration.installing ?? registration.waiting);
+      }
     });
-  });
-  // An installed app can stay open for days; check again whenever it comes back to the screen.
-  document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible') registration.update().catch(() => {});
-  });
+  };
+  track(registration.installing ?? registration.waiting);
+  registration.addEventListener('updatefound', () => track(registration.installing));
+  checkForUpdate = () => registration.update().catch(() => {});
 }
 
 watchForUpdates().catch(() => {});
