@@ -3,7 +3,8 @@ import { STORES } from './lib/flipp.js';
 import { recommend } from './lib/recommend.js';
 import { getSnapshot, getWeek, isStale, refresh } from './lib/store.js';
 
-const STORAGE = { maxBuy: 'pfq.maxBuy', sortBy: 'pfq.sortBy', postalCode: 'pfq.postalCode' };
+const STORAGE = { maxBuy: 'pfq.maxBuy', sortBy: 'pfq.sortBy', postalCode: 'pfq.postalCode', userName: 'pfq.userName' };
+const MAX_NAME_LENGTH = 30;
 const DEFAULT_POSTAL_CODE = 'G2G1B8';
 const POSTAL_CODE_PATTERN = /^[A-Z]\d[A-Z]\d[A-Z]\d$/;
 // Pantry and list used to be saved; every visit now starts with nothing selected.
@@ -17,11 +18,14 @@ const STATUS_ICON = { deal: '🏷️', have: '✅', buy: '🛒', optional: '➕'
 const MEDALS = ['🥇 Le moins cher', '🥈 2e moins cher', '🥉 3e moins cher'];
 // On phones each section is its own screen, picked by the URL hash so Android's back button works.
 const SCREENS = ['garde-manger', 'recettes', 'prix'];
+// Made inert while a full-screen prompt (name, update) is shown.
+const BLOCKED_REGIONS = 'header, main, nav, dialog, .list-fab';
 
 const state = {
   status: null,
   catalog: { categories: CATEGORIES, commonPantry: COMMON_PANTRY, ingredients: INGREDIENTS },
   postalCode: readStorage(STORAGE.postalCode, DEFAULT_POSTAL_CODE),
+  userName: readStorage(STORAGE.userName, ''),
   refreshing: false,
   error: null,
   pantry: new Set(),
@@ -403,7 +407,7 @@ function renderList() {
 
 function listAsText() {
   const { byStore, total } = buildList();
-  const lines = ['Liste d’épicerie de Max', ''];
+  const lines = [state.userName ? `Liste d’épicerie de ${state.userName}` : 'Ma liste d’épicerie', ''];
   for (const [store, entries] of byStore) {
     lines.push(store);
     for (const { name, offer, cost } of entries) {
@@ -505,8 +509,11 @@ function init() {
   }
   loadStatus();
   renderPantry();
+  renderUserName();
   selectWeek(state.week);
   syncFlyers({ force: true });
+  $('#hello').addEventListener('click', askUserName);
+  if (!state.userName) askUserName();
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') onAppReopened();
   });
@@ -514,6 +521,47 @@ function init() {
   window.addEventListener('pageshow', (event) => {
     if (event.persisted) onAppReopened();
   });
+}
+
+// ---------- User name ----------
+
+function renderUserName() {
+  const name = state.userName;
+  $('#hello').textContent = name ? `Salut ${name}! 👋 ✏️` : 'Salut! 👋';
+  $('.user-name-suffix').textContent = name ? `, ${name}` : '';
+  $('#list-title').textContent = name ? `🛒 La liste d’épicerie de ${name}` : '🛒 Ma liste d’épicerie';
+}
+
+// Asked on first launch only; the answer stays on this device. Tapping the greeting asks again.
+function askUserName() {
+  if ($('#welcome-screen')) return;
+  const regions = [...document.querySelectorAll(BLOCKED_REGIONS)].filter((region) => !region.inert);
+  for (const region of regions) region.inert = true;
+  const input = el('input', {
+    id: 'welcome-name', name: 'name', autocomplete: 'given-name', maxlength: String(MAX_NAME_LENGTH),
+    placeholder: 'Ton prénom', required: 'required', enterkeyhint: 'done',
+  });
+  input.value = state.userName;
+  document.body.append(el('div', { id: 'welcome-screen', class: 'update-screen welcome-screen', role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'welcome-title' },
+    el('form', {
+      class: 'update-card',
+      onsubmit: (event) => {
+        event.preventDefault();
+        const name = input.value.trim().replace(/\s+/g, ' ').slice(0, MAX_NAME_LENGTH);
+        if (!name) return;
+        state.userName = name;
+        writeStorage(STORAGE.userName, name);
+        renderUserName();
+        $('#welcome-screen').remove();
+        for (const region of regions) region.inert = false;
+      },
+    },
+      el('img', { class: 'update-icon', src: 'icons/icon-192.png', alt: '' }),
+      el('h2', { id: 'welcome-title', text: 'Bienvenue! 👋' }),
+      el('label', { for: 'welcome-name', text: 'Comment t’appelles-tu?' }),
+      input,
+      el('button', { type: 'submit', class: 'btn update-btn', text: 'C’est parti' }))));
+  input.focus();
 }
 
 // ---------- Reopening ----------
@@ -535,7 +583,6 @@ init();
 
 // ---------- App updates ----------
 
-const BLOCKED_REGIONS = 'header, main, nav, dialog, .list-fab';
 let pendingWorker = null;
 let installRequested = false;
 

@@ -74,7 +74,7 @@ body {
 }
 .hero-inner { position: relative; padding-top: 32px; padding-bottom: 28px; }
 .hero-top { display: flex; flex-wrap: wrap; gap: 20px; justify-content: space-between; align-items: flex-start; }
-.hello { margin: 0; font-weight: 700; font-size: 1.05rem; opacity: 0.95; }
+.hello { margin: 0; padding: 0; font: inherit; font-weight: 700; font-size: 1.05rem; color: inherit; opacity: 0.95; background: none; border: none; cursor: pointer; text-align: left; }
 h1 { margin: 2px 0 4px; font-family: var(--font-display); font-weight: 800; font-size: clamp(2rem, 5vw, 3.2rem); line-height: 1.05; letter-spacing: -0.02em; }
 h1 span { display: inline-block; background: #fff; color: var(--tomato); padding: 0 12px; border-radius: 14px; transform: rotate(-2deg); }
 .tagline { margin: 6px 0 0; font-size: 1.05rem; opacity: 0.95; max-width: 46ch; }
@@ -359,6 +359,14 @@ main { padding-bottom: 90px; }
 .update-card p { margin: 0 0 20px; color: var(--muted); }
 .update-icon { width: 88px; height: 88px; border-radius: 22px; }
 .update-btn { width: 100%; padding: 14px; font-size: 1.05rem; }
+/* The update screen must stay above the first-launch name prompt. */
+.welcome-screen { z-index: 90; }
+.welcome-screen label { display: block; margin: 0 0 10px; color: var(--muted); }
+.welcome-screen input {
+  width: 100%; margin-bottom: 16px; padding: 12px 14px; font: inherit; font-size: 1.1rem; text-align: center;
+  border-radius: 14px; border: 2px solid var(--line); background: var(--bg); color: var(--ink);
+}
+.welcome-screen input:focus { outline: none; border-color: var(--orange); }
 
 /* ---------- Phone layout: one screen per section, tab bar at the bottom ---------- */
 
@@ -373,7 +381,8 @@ main { padding-bottom: 90px; }
 
   .hero { margin-bottom: 16px; border-radius: 0 0 24px 24px; }
   .hero-inner { padding-top: calc(14px + env(safe-area-inset-top)); padding-bottom: 16px; }
-  .hello, .tagline, .hero-decor { display: none; }
+  .tagline, .hero-decor { display: none; }
+  .hello { font-size: 0.95rem; }
   h1 { font-size: 1.7rem; }
   .hero-top { gap: 10px; }
   .status { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; }

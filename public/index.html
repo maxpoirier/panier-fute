@@ -24,7 +24,7 @@
     <div class="wrap hero-inner">
       <div class="hero-top">
         <div>
-          <p class="hello">Salut Max! 👋</p>
+          <button id="hello" class="hello" type="button" title="Changer de prénom">Salut! 👋</button>
           <h1>Le panier futé <span>de Max</span></h1>
           <p class="tagline">Les rabais d’IGA, Super C, Maxi et Walmart transformés en bons petits plats.</p>
         </div>
@@ -46,7 +46,7 @@
     <section id="pantry" class="panel">
       <div class="panel-head">
         <div>
-          <h2><span class="step">1</span> Qu’as-tu déjà à la maison, Max?</h2>
+          <h2><span class="step">1</span> <span>Qu’as-tu déjà à la maison<span class="user-name-suffix"></span>?</span></h2>
           <p class="hint">Touche ce que tu as déjà. Ces ingrédients comptent pour 0 $ dans les recettes.</p>
         </div>
         <div class="actions">
@@ -113,7 +113,7 @@
   <button id="list-fab" class="list-fab" type="button" hidden>🛒 Ma liste <span id="list-count">0</span></button>
   <dialog id="list-dialog">
     <form method="dialog" class="dialog-head">
-      <h2>🛒 La liste d’épicerie de Max</h2>
+      <h2 id="list-title">🛒 Ma liste d’épicerie</h2>
       <button class="btn ghost" aria-label="Fermer">✕</button>
     </form>
     <div id="list-body"></div>
