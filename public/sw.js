@@ -1,5 +1,5 @@
 // Bump on every release so phones drop the old app files.
-const VERSION = 'v2';
+const VERSION = 'v3';
 const APP_CACHE = `panier-app-${VERSION}`;
 const IMAGE_CACHE = 'panier-images';
 
