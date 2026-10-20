@@ -46,8 +46,6 @@ If you add a file to `public/`, add it to `APP_FILES` in `public/sw.js`; a test 
 
 - **Accessibility:** colours are chosen for WCAG AA contrast (4.5:1), including white text across the header gradient,
   which axe can't measure; keep new colours above that ratio.
-- **Dependabot** (`.github/dependabot.yml`): weekly PRs for npm packages and the pinned GitHub Actions, skipping
-  releases younger than two weeks. The CI checks each one.
 
 ## License
 
