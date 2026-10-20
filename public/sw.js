@@ -1,5 +1,5 @@
 // Bump on every release: phones then show the "Nouvelle version disponible" screen and drop the old app files.
-const VERSION = 'v6';
+const VERSION = 'v7';
 const APP_CACHE = `panier-app-${VERSION}`;
 const IMAGE_CACHE = 'panier-images';
 
@@ -32,7 +32,10 @@ const APP_FILES = [
 // A new version waits until the user taps "Installer la mise à jour" (see app.js), so the running app never
 // changes under their feet. On a first install nothing is running yet, so the browser activates it right away.
 self.addEventListener('install', (event) => {
-  event.waitUntil(caches.open(APP_CACHE).then((cache) => cache.addAll(APP_FILES)));
+  // Bypass the browser's HTTP cache: GitHub Pages lets it keep files for 10 minutes, which would otherwise store the
+  // previous version's files under this new version.
+  const fresh = APP_FILES.map((file) => new Request(file, { cache: 'reload' }));
+  event.waitUntil(caches.open(APP_CACHE).then((cache) => cache.addAll(fresh)));
 });
 
 self.addEventListener('message', (event) => {
