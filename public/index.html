@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="fr-CA">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Le panier futé de Max</title>
+  <meta name="theme-color" content="#e8553e">
+  <meta name="description" content="Les rabais d’IGA, Super C, Maxi et Walmart transformés en recettes, du moins cher au plus cher.">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon-192.png" type="image/png">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&family=Fraunces:opsz,wght@9..144,600;9..144,800&display=swap">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="hero">
+    <div class="hero-decor" aria-hidden="true">
+      <span>🥕</span><span>🍅</span><span>🧀</span><span>🥖</span><span>🍗</span><span>🥦</span><span>🍋</span><span>🌽</span>
+    </div>
+    <div class="wrap hero-inner">
+      <div class="hero-top">
+        <div>
+          <p class="hello">Salut Max! 👋</p>
+          <h1>Le panier futé <span>de Max</span></h1>
+          <p class="tagline">Les rabais d’IGA, Super C, Maxi et Walmart transformés en bons petits plats.</p>
+        </div>
+        <div class="status">
+          <p id="status-text">Chargement…</p>
+          <form id="postal-form" class="postal-form">
+            <label for="postal-input">Code postal</label>
+            <input id="postal-input" name="postal" autocomplete="postal-code" maxlength="7" placeholder="G2G 1B8">
+            <button class="btn light" type="submit">OK</button>
+          </form>
+          <button id="refresh-btn" class="btn light" type="button">↻ Rafraîchir les circulaires</button>
+        </div>
+      </div>
+      <div id="stats" class="stats"></div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section id="pantry" class="panel">
+      <div class="panel-head">
+        <div>
+          <h2><span class="step">1</span> Qu’as-tu déjà à la maison, Max?</h2>
+          <p class="hint">Touche ce que tu as déjà. Ces ingrédients comptent pour 0 $ dans les recettes.</p>
+        </div>
+        <div class="actions">
+          <span id="pantry-count" class="counter"></span>
+          <button id="pantry-common" class="btn" type="button">✨ Cocher les essentiels</button>
+          <button id="pantry-clear" class="btn ghost" type="button">Tout décocher</button>
+        </div>
+      </div>
+      <div id="pantry-groups" class="pantry-groups"></div>
+    </section>
+
+    <section id="plan" class="panel">
+      <div class="panel-head">
+        <h2><span class="step">2</span> Recettes du moins cher au plus cher</h2>
+        <div class="filters">
+          <label class="filter">Trier par
+            <select id="sort-by">
+              <option value="total">Prix total (moins cher d’abord)</option>
+              <option value="serving">Prix par portion</option>
+              <option value="score">Meilleures aubaines</option>
+            </select>
+          </label>
+          <label class="filter">Au prix régulier, max
+            <select id="max-buy">
+              <option value="99">peu importe</option>
+              <option value="0">0 ingrédient</option>
+              <option value="1">1 ingrédient</option>
+              <option value="2" selected>2 ingrédients</option>
+              <option value="3">3 ingrédients</option>
+            </select>
+          </label>
+        </div>
+      </div>
+      <div class="tabs" role="tablist">
+        <button role="tab" class="tab" data-week="current" aria-selected="true">Cette semaine</button>
+        <button role="tab" class="tab" data-week="next" aria-selected="false">Semaine prochaine</button>
+      </div>
+      <div id="week-stores" class="week-stores"></div>
+      <p class="hint">Prix estimé = prix en circulaire pour ce qui est en rabais + prix régulier approximatif pour le reste. Ce que tu as déjà compte pour 0 $.</p>
+      <div class="legend">
+        <span>🏷️ en rabais</span><span>✅ tu l’as</span><span>🛒 prix régulier</span><span>➕ facultatif</span>
+      </div>
+      <div id="recipes" class="recipes"></div>
+    </section>
+
+    <section id="deals" class="panel">
+      <div class="panel-head">
+        <h2><span class="step">3</span> Meilleurs prix, épicerie par épicerie</h2>
+        <input id="deal-search" type="search" placeholder="🔎 Filtrer (ex. poulet, brocoli)…" aria-label="Filtrer les aubaines">
+      </div>
+      <p class="hint">Prix tels qu’affichés dans les circulaires. Certaines chaînes affichent le prix à la livre, d’autres au paquet : vérifie le format avant de comparer. 🏆 = le moins cher.</p>
+      <div class="table-scroll"><table id="deals-table"></table></div>
+    </section>
+  </main>
+
+  <button id="list-fab" class="list-fab" type="button" hidden>🛒 Ma liste <span id="list-count">0</span></button>
+  <dialog id="list-dialog">
+    <form method="dialog" class="dialog-head">
+      <h2>🛒 La liste d’épicerie de Max</h2>
+      <button class="btn ghost" aria-label="Fermer">✕</button>
+    </form>
+    <div id="list-body"></div>
+    <div class="dialog-actions">
+      <button id="list-copy" class="btn" type="button">📋 Copier la liste</button>
+      <button id="list-clear" class="btn ghost" type="button">Vider</button>
+    </div>
+  </dialog>
+
+  <footer class="wrap footer">
+    Fait pour Max avec 🧡 · Circulaires via Flipp, rafraîchies chaque semaine · Usage personnel
+  </footer>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>

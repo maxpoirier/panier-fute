@@ -1,0 +1,287 @@
+// An ingredient is either an id or a list [preferred, ...acceptable substitutes]: having or finding any of them on sale counts.
+// main: the star ingredient; a recipe ranks much higher when it is on sale.
+// optional: nice to have, never counted as something to buy.
+// Salt, pepper and water are assumed to be on hand. Every recipe serves at least 4.
+
+const spec = (ids) => (Array.isArray(ids) ? { id: ids[0], alt: ids.slice(1) } : { id: ids, alt: [] });
+const main = (ids, qty) => ({ ...spec(ids), qty, main: true });
+const need = (ids, qty) => ({ ...spec(ids), qty });
+const opt = (ids, qty) => ({ ...spec(ids), qty, optional: true });
+
+// Puts the preferred variant first and keeps the rest of the family as substitutes.
+const prefer = (first, family) => [first, ...family.filter((id) => id !== first)];
+
+const RICE = ['riz_blanc', 'riz_basmati', 'riz_jasmin', 'riz_brun'];
+const BUTTER = ['beurre_sale', 'beurre_demi_sel', 'beurre_non_sale'];
+const MILK = ['lait', 'lait_entier', 'lait_sans_lactose'];
+const CHICKEN = ['poulet_poitrine', 'poulet_cuisses'];
+const ONION = ['oignon_jaune', 'oignon_rouge', 'echalote'];
+const CANNED_TOMATOES = ['tomates_des', 'tomates_broyees', 'tomates_entieres'];
+const DRIED_HERBS = ['thym', 'herbes_italiennes', 'origan'];
+const HOT_SAUCE = ['sriracha', 'sauce_piquante'];
+const POTATO = ['pomme_de_terre', 'grelots'];
+const BEANS = ['haricots_rouges', 'haricots_noirs'];
+
+export const RECIPES = [
+  {
+    id: 'saute-poulet-teriyaki', emoji: '🥢', name: 'Sauté de poulet teriyaki', time: 30, servings: 4, tags: ['asiatique', 'rapide'],
+    ingredients: [main(CHICKEN, '600 g'), need('brocoli', '1 tête'), need('poivron', '1'), need(ONION, '1'), need('ail', '2 gousses'),
+      need('sauce_soya', '1/3 tasse'), need('miel', '3 c. à soupe'), need(prefer('riz_jasmin', RICE), '1 1/2 tasse'),
+      need('huile_vegetale', '2 c. à soupe'), opt('gingembre', '1 c. à thé râpé'), opt('fecule_mais', '1 c. à soupe')],
+    steps: ['Cuire le riz.', 'Saisir le poulet en lanières dans l’huile chaude, réserver.',
+      'Sauter le brocoli, le poivron et l’oignon 4 min.', 'Ajouter l’ail, le gingembre, la sauce soya, le miel et la fécule délayée; remettre le poulet et napper.'],
+  },
+  {
+    id: 'poulet-au-beurre', emoji: '🍛', name: 'Poulet au beurre', time: 40, servings: 4, tags: ['indien', 'réconfort'],
+    ingredients: [main(prefer('poulet_cuisses', CHICKEN), '700 g'), need(ONION, '1'), need('ail', '3 gousses'),
+      need(prefer('tomates_broyees', CANNED_TOMATOES), '1 boîte (796 ml)'), need(['creme_15', 'creme_35', 'creme_10'], '1 tasse'),
+      need(BUTTER, '3 c. à soupe'), need('cari_poudre', '2 c. à soupe'), need(prefer('riz_basmati', RICE), '1 1/2 tasse'),
+      opt('gingembre', '1 c. à soupe'), opt('pate_tomate', '2 c. à soupe')],
+    steps: ['Dorer le poulet en cubes dans le beurre, réserver.', 'Faire revenir l’oignon, l’ail, le gingembre et les épices.',
+      'Ajouter les tomates et la pâte de tomates, mijoter 10 min puis mixer.', 'Remettre le poulet, ajouter la crème, mijoter 10 min. Servir sur le riz.'],
+  },
+  {
+    id: 'cari-poulet-coco', emoji: '🥥', name: 'Cari de poulet au lait de coco', time: 35, servings: 4, tags: ['thaï', 'épicé'],
+    ingredients: [main(prefer('poulet_cuisses', CHICKEN), '600 g'), need('lait_coco', '1 boîte'), need('pate_cari', '2 c. à soupe'),
+      need(ONION, '1'), need('poivron', '1'), need(prefer('riz_jasmin', RICE), '1 1/2 tasse'), opt('lime', '1'), opt('sauce_poisson', '1 c. à soupe')],
+    steps: ['Cuire le riz.', 'Faire revenir l’oignon et la pâte de cari 2 min.', 'Ajouter le poulet, puis le lait de coco et le poivron; mijoter 15 min.',
+      'Assaisonner de jus de lime et de sauce de poisson.'],
+  },
+  {
+    id: 'fajitas-poulet', emoji: '🌯', name: 'Fajitas au poulet', time: 25, servings: 4, tags: ['mexicain', 'rapide'],
+    ingredients: [main(CHICKEN, '600 g'), need('poivron', '2'), need(prefer('oignon_rouge', ONION), '1'), need('tortillas', '8'),
+      need('chili_poudre', '1 c. à soupe'), need('huile_vegetale', '2 c. à soupe'), opt('cumin', '1 c. à thé'), opt('lime', '1'),
+      opt('creme_sure', 'au goût'), opt('salsa', 'au goût')],
+    steps: ['Mélanger le poulet en lanières avec les épices et l’huile.', 'Saisir le poulet, ajouter les poivrons et l’oignon émincés.',
+      'Arroser de lime et servir dans les tortillas chaudes avec crème sure et salsa.'],
+  },
+  {
+    id: 'poulet-roti-legumes', emoji: '🍗', name: 'Poulet rôti et légumes sur plaque', time: 50, servings: 4, tags: ['une plaque', 'famille'],
+    ingredients: [main(prefer('poulet_cuisses', CHICKEN), '1 kg'), need(prefer('grelots', POTATO), '700 g'), need('carotte', '4'), need(ONION, '1'),
+      need('ail', '4 gousses'), need('huile_olive', '3 c. à soupe'), need(DRIED_HERBS, '1 c. à soupe'), opt('citron', '1')],
+    steps: ['Préchauffer le four à 425 °F.', 'Couper les légumes, mélanger avec l’huile, l’ail et les herbes.',
+      'Déposer le poulet par-dessus, cuire 40 min.', 'Arroser de jus de citron avant de servir.'],
+  },
+  {
+    id: 'alfredo-poulet-brocoli', emoji: '🍝', name: 'Fettuccine Alfredo poulet et brocoli', time: 30, servings: 4, tags: ['pâtes', 'réconfort'],
+    ingredients: [main(CHICKEN, '500 g'), need(['pates_longues', 'pates_courtes'], '450 g (fettuccine)'), need('brocoli', '1 tête'),
+      need(['creme_35', 'creme_15'], '1 1/2 tasse'), need('parmesan', '1 tasse'), need(BUTTER, '2 c. à soupe'), need('ail', '2 gousses')],
+    steps: ['Cuire les pâtes, ajouter le brocoli les 3 dernières minutes.', 'Dorer le poulet dans le beurre, ajouter l’ail.',
+      'Verser la crème, réduire 3 min, incorporer le parmesan.', 'Mélanger avec les pâtes et le brocoli.'],
+  },
+  {
+    id: 'soupe-poulet-nouilles', emoji: '🍜', name: 'Soupe poulet et nouilles', time: 40, servings: 6, tags: ['soupe', 'réconfort'],
+    ingredients: [main(CHICKEN, '500 g'), need(['bouillon_poulet', 'bouillon_legumes'], '2 L'), need('carotte', '3'), need('celeri', '2 branches'),
+      need(ONION, '1'), need(['nouilles_oeufs', 'petites_pates'], '2 tasses'), opt(DRIED_HERBS, '1 c. à thé')],
+    steps: ['Faire revenir l’oignon, la carotte et le céleri.', 'Ajouter le bouillon et le poulet entier, mijoter 20 min.',
+      'Effilocher le poulet, ajouter les nouilles et cuire 8 min.'],
+  },
+  {
+    id: 'spaghetti-bolognaise', emoji: '🍝', name: 'Spaghetti bolognaise', time: 40, servings: 6, tags: ['pâtes', 'famille'],
+    ingredients: [main('boeuf_hache', '700 g'), need(['pates_longues', 'pates_courtes'], '450 g (spaghetti)'), need('sauce_tomate', '1 pot (650 ml)'),
+      need(ONION, '1'), need('ail', '2 gousses'), opt('carotte', '1'), opt('champignon', '1 barquette'), opt('parmesan', 'au goût')],
+    steps: ['Faire revenir l’oignon, la carotte et l’ail.', 'Dorer le bœuf, ajouter les champignons.', 'Verser la sauce, mijoter 20 min.',
+      'Servir sur les spaghetti avec du parmesan.'],
+  },
+  {
+    id: 'pate-chinois', emoji: '🥧', name: 'Pâté chinois', time: 60, servings: 6, tags: ['québécois', 'famille'],
+    ingredients: [main('boeuf_hache', '700 g'), need('pomme_de_terre', '1,5 kg'), need('mais_creme', '1 boîte (398 ml)'),
+      need(['mais_grains', 'mais'], '1 boîte ou 2 épis'), need(ONION, '1'), need(BUTTER, '1/4 tasse'), need(MILK, '1/2 tasse'), opt('paprika', 'pour garnir')],
+    steps: ['Cuire et piler les pommes de terre avec le beurre et le lait.', 'Dorer le bœuf avec l’oignon.',
+      'Étager bœuf, maïs (en grains et en crème) et purée dans un plat; saupoudrer de paprika.', 'Cuire 30 min à 375 °F.'],
+  },
+  {
+    id: 'chili-con-carne', emoji: '🌶️', name: 'Chili con carne', time: 45, servings: 6, tags: ['mexicain', 'mijoté'],
+    ingredients: [main('boeuf_hache', '700 g'), need(BEANS, '2 boîtes'), need(CANNED_TOMATOES, '1 boîte (796 ml)'), need(ONION, '1'),
+      need('poivron', '1'), need('chili_poudre', '2 c. à soupe'), need('ail', '2 gousses'), opt('cumin', '1 c. à thé'),
+      opt('cheddar', 'râpé, au goût'), opt('creme_sure', 'au goût')],
+    steps: ['Dorer le bœuf avec l’oignon, le poivron et l’ail.', 'Ajouter les épices, les tomates et les haricots rincés.',
+      'Mijoter 25 min. Garnir de cheddar et de crème sure.'],
+  },
+  {
+    id: 'tacos-boeuf', emoji: '🌮', name: 'Tacos au bœuf', time: 25, servings: 4, tags: ['mexicain', 'rapide'],
+    ingredients: [main('boeuf_hache', '500 g'), need('tortillas', '8'), need('laitue', '1/2'), need(['tomate', 'tomates_cerises'], '2'),
+      need('cheddar', '1 tasse'), need('chili_poudre', '2 c. à soupe'), opt('cumin', '1 c. à thé'), opt('salsa', 'au goût'), opt('creme_sure', 'au goût')],
+    steps: ['Dorer le bœuf, ajouter les épices et 1/2 tasse d’eau, réduire.', 'Réchauffer les tortillas.',
+      'Garnir de bœuf, laitue, tomates, cheddar, salsa et crème sure.'],
+  },
+  {
+    id: 'burgers-maison', emoji: '🍔', name: 'Burgers maison', time: 30, servings: 4, tags: ['bbq', 'famille'],
+    ingredients: [main('boeuf_hache', '600 g'), need('pains_hamburger', '4'), need(ONION, '1'), need('ketchup', 'au goût'),
+      need(['moutarde_jaune', 'moutarde_dijon'], 'au goût'), opt('cheddar', '4 tranches'), opt('laitue', 'quelques feuilles'), opt('tomate', '1'),
+      opt('oeufs', '1'), opt('chapelure', '1/4 tasse')],
+    steps: ['Mélanger le bœuf, l’œuf, la chapelure et un peu d’oignon haché; façonner 4 boulettes.',
+      'Cuire 4-5 min de chaque côté (BBQ ou poêle), ajouter le cheddar à la fin.', 'Garnir les pains.'],
+  },
+  {
+    id: 'macaroni-chinois', emoji: '🥡', name: 'Macaroni chinois', time: 30, servings: 4, tags: ['québécois', 'rapide'],
+    ingredients: [main('boeuf_hache', '450 g'), need('pates_courtes', '3 tasses (macaroni)'), need('celeri', '2 branches'), need(ONION, '1'),
+      need('sauce_soya', '1/4 tasse'), need(['bouillon_poulet', 'bouillon_boeuf', 'bouillon_legumes'], '1 tasse'), opt('poivron', '1'),
+      opt('champignon', '1 barquette'), opt('fecule_mais', '1 c. à soupe')],
+    steps: ['Cuire les macaronis.', 'Dorer le bœuf avec l’oignon, le céleri, le poivron et les champignons.',
+      'Ajouter le bouillon, la sauce soya et la fécule délayée.', 'Incorporer les pâtes.'],
+  },
+  {
+    id: 'boeuf-brocoli', emoji: '🥦', name: 'Bœuf et brocoli', time: 25, servings: 4, tags: ['asiatique', 'rapide'],
+    ingredients: [main('steak', '500 g'), need('brocoli', '1 grosse tête'), need('sauce_soya', '1/3 tasse'), need(['cassonade', 'sucre'], '2 c. à soupe'),
+      need('ail', '2 gousses'), need('fecule_mais', '1 c. à soupe'), need(prefer('riz_jasmin', RICE), '1 1/2 tasse'), need('huile_vegetale', '2 c. à soupe'),
+      opt('gingembre', '1 c. à thé'), opt('huile_sesame', '1 c. à thé')],
+    steps: ['Trancher finement le bœuf et l’enrober de fécule.', 'Saisir à feu vif, réserver; sauter le brocoli 3 min.',
+      'Ajouter l’ail, le gingembre, la sauce soya et la cassonade, remettre le bœuf.', 'Servir sur le riz.'],
+  },
+  {
+    id: 'steak-patates', emoji: '🥩', name: 'Steak, patates grelots et haricots', time: 35, servings: 4, tags: ['classique'],
+    ingredients: [main('steak', '4 biftecks'), need(prefer('grelots', POTATO), '700 g'), need('haricots_verts', '400 g'),
+      need(BUTTER, '3 c. à soupe'), need('ail', '2 gousses'), opt(DRIED_HERBS, '1 c. à thé')],
+    steps: ['Rôtir les grelots coupés en deux 25 min à 425 °F.', 'Saisir les steaks 3-4 min par côté, arroser de beurre à l’ail.',
+      'Cuire les haricots à la vapeur 5 min.'],
+  },
+  {
+    id: 'porc-erable-moutarde', emoji: '🍁', name: 'Côtelettes de porc érable et moutarde', time: 30, servings: 4, tags: ['québécois', 'rapide'],
+    ingredients: [main('porc_cotelettes', '4 côtelettes'), need('sirop_erable', '1/4 tasse'), need(['moutarde_dijon', 'moutarde_jaune'], '2 c. à soupe'),
+      need(['patate_douce', 'pomme_de_terre'], '2'), opt('haricots_verts', '400 g'), opt('ail', '1 gousse')],
+    steps: ['Rôtir les patates douces en cubes 25 min à 425 °F.', 'Mélanger sirop, moutarde et ail.',
+      'Saisir les côtelettes 4 min par côté, napper de sauce et laisser caraméliser.'],
+  },
+  {
+    id: 'filet-porc-pommes', emoji: '🍎', name: 'Filet de porc aux pommes', time: 40, servings: 4, tags: ['automne'],
+    ingredients: [main('porc_filet', '1 filet (500 g)'), need('pomme', '2'), need(prefer('echalote', ONION), '1'),
+      need(['bouillon_poulet', 'bouillon_legumes'], '1 tasse'), need(RICE, '1 1/2 tasse'), opt(['moutarde_dijon', 'moutarde_jaune'], '1 c. à soupe'),
+      opt(['creme_15', 'creme_35', 'creme_10'], '1/2 tasse'), opt(DRIED_HERBS, '1 c. à thé')],
+    steps: ['Saisir le filet de tous côtés, puis 15 min au four à 400 °F.', 'Dans la même poêle, dorer l’oignon et les pommes en quartiers.',
+      'Déglacer au bouillon, ajouter moutarde et crème, réduire.', 'Trancher le porc et servir avec la sauce et le riz.'],
+  },
+  {
+    id: 'saucisses-plaque', emoji: '🌭', name: 'Saucisses et légumes rôtis', time: 40, servings: 4, tags: ['une plaque', 'facile'],
+    ingredients: [main('saucisses', '6'), need(POTATO, '4'), need('poivron', '2'), need(prefer('oignon_rouge', ONION), '1'),
+      need('huile_olive', '3 c. à soupe'), need(prefer('herbes_italiennes', DRIED_HERBS), '1 c. à soupe'), opt('courgette', '1')],
+    steps: ['Préchauffer le four à 425 °F.', 'Couper légumes et saucisses en morceaux, mélanger avec l’huile et les herbes.', 'Rôtir 30-35 min en brassant à mi-cuisson.'],
+  },
+  {
+    id: 'pates-saucisses', emoji: '🍝', name: 'Pâtes aux saucisses italiennes', time: 30, servings: 4, tags: ['pâtes', 'rapide'],
+    ingredients: [main('saucisses', '4 (italiennes)'), need(['pates_courtes', 'pates_longues'], '450 g (penne ou rigatoni)'), need('sauce_tomate', '1 pot'),
+      need(ONION, '1'), need('ail', '2 gousses'), opt('epinards', '2 tasses'), opt('parmesan', 'au goût')],
+    steps: ['Cuire les pâtes.', 'Retirer la chair des saucisses et la dorer avec l’oignon et l’ail.',
+      'Ajouter la sauce et les épinards, mijoter 10 min.', 'Mélanger aux pâtes, garnir de parmesan.'],
+  },
+  {
+    id: 'saumon-erable-soya', emoji: '🐟', name: 'Saumon glacé érable et soya', time: 25, servings: 4, tags: ['poisson', 'québécois'],
+    ingredients: [main('saumon', '4 filets'), need('sirop_erable', '1/4 tasse'), need('sauce_soya', '3 c. à soupe'), need('ail', '1 gousse'),
+      need(RICE, '1 1/2 tasse'), need(['brocoli', 'haricots_verts'], '1 tête')],
+    steps: ['Mélanger le sirop, la sauce soya et l’ail; badigeonner le saumon.', 'Cuire 12-15 min à 400 °F.', 'Servir avec le riz et le brocoli vapeur.'],
+  },
+  {
+    id: 'bol-poke-saumon', emoji: '🍣', name: 'Bol poké au saumon', time: 30, servings: 4, tags: ['frais', 'poisson'],
+    ingredients: [main('saumon', '500 g'), need(['riz_sushi', 'riz_jasmin', 'riz_blanc'], '1 1/2 tasse'), need('avocat', '2'), need('concombre', '1'),
+      need('carotte', '2'), need('sauce_soya', '1/4 tasse'), opt('huile_sesame', '1 c. à soupe'), opt(HOT_SAUCE, 'au goût'),
+      opt('mayonnaise', '3 c. à soupe'), opt('oignon_vert', '2'), opt('vinaigre_riz', '2 c. à soupe')],
+    steps: ['Cuire le riz, l’assaisonner de vinaigre de riz et le laisser tiédir.', 'Cuire le saumon 12 min à 400 °F, puis émietter (ou en cubes si qualité sashimi).',
+      'Mélanger mayo et sriracha.', 'Monter les bols : riz, saumon, avocat, concombre, carotte râpée, sauce soya et mayo épicée.'],
+  },
+  {
+    id: 'crevettes-ail-linguine', emoji: '🦐', name: 'Linguine aux crevettes et à l’ail', time: 20, servings: 4, tags: ['pâtes', 'rapide'],
+    ingredients: [main('crevettes', '450 g'), need(['pates_longues', 'pates_courtes'], '450 g (linguine)'), need('ail', '4 gousses'),
+      need(BUTTER, '3 c. à soupe'), need('citron', '1'), need('huile_olive', '2 c. à soupe'), opt('parmesan', 'au goût'), opt('epinards', '2 tasses')],
+    steps: ['Cuire les pâtes.', 'Sauter l’ail dans l’huile et le beurre 1 min, ajouter les crevettes 3 min.',
+      'Ajouter le jus et le zeste de citron, les épinards, puis les pâtes avec un peu d’eau de cuisson.'],
+  },
+  {
+    id: 'riz-frit-crevettes', emoji: '🍤', name: 'Riz frit aux crevettes', time: 20, servings: 4, tags: ['asiatique', 'restes'],
+    ingredients: [main('crevettes', '400 g'), need(prefer('riz_jasmin', RICE), '4 tasses cuit (de la veille)'), need('oeufs', '3'), need('carotte', '1'),
+      need('sauce_soya', '3 c. à soupe'), need('huile_vegetale', '2 c. à soupe'), opt('oignon_vert', '3'), opt(['mais_grains', 'mais'], '1/2 tasse'),
+      opt('huile_sesame', '1 c. à thé')],
+    steps: ['Sauter les crevettes, réserver.', 'Brouiller les œufs, réserver.', 'Sauter la carotte et le maïs, ajouter le riz froid et la sauce soya.',
+      'Remettre crevettes et œufs, garnir d’oignons verts.'],
+  },
+  {
+    id: 'pad-thai', emoji: '🥜', name: 'Pad thaï aux crevettes', time: 30, servings: 4, tags: ['thaï'],
+    ingredients: [main('crevettes', '400 g'), need('nouilles_riz', '250 g'), need('oeufs', '2'), need('sauce_poisson', '3 c. à soupe'),
+      need(['cassonade', 'sucre'], '2 c. à soupe'), need('lime', '2'), need('huile_vegetale', '2 c. à soupe'), opt('oignon_vert', '3'), opt('arachides', '1/3 tasse')],
+    steps: ['Tremper les nouilles dans l’eau chaude 10 min.', 'Mélanger sauce de poisson, cassonade et jus de lime.',
+      'Sauter les crevettes, pousser de côté et brouiller les œufs.', 'Ajouter nouilles et sauce, garnir d’arachides et d’oignons verts.'],
+  },
+  {
+    id: 'tofu-general-tao', emoji: '🍱', name: 'Tofu général Tao', time: 30, servings: 4, tags: ['végé', 'asiatique'],
+    ingredients: [main('tofu', '450 g'), need('fecule_mais', '1/4 tasse'), need('sauce_soya', '3 c. à soupe'), need(['cassonade', 'sucre'], '3 c. à soupe'),
+      need(['vinaigre_riz', 'vinaigre_blanc', 'vinaigre_cidre', 'vinaigre_vin'], '2 c. à soupe'), need('ail', '2 gousses'), need('brocoli', '1 tête'),
+      need(prefer('riz_jasmin', RICE), '1 1/2 tasse'), need('huile_vegetale', '3 c. à soupe'), opt(HOT_SAUCE, '1 c. à thé'), opt('gingembre', '1 c. à thé')],
+    steps: ['Couper le tofu en cubes, enrober de fécule et dorer dans l’huile.', 'Mélanger sauce soya, cassonade, vinaigre, sriracha, ail et gingembre.',
+      'Sauter le brocoli, ajouter la sauce puis le tofu.', 'Servir sur le riz.'],
+  },
+  {
+    id: 'curry-pois-chiches', emoji: '🫘', name: 'Curry de pois chiches et épinards', time: 30, servings: 4, tags: ['végé', 'indien'],
+    ingredients: [main('pois_chiches', '2 boîtes'), main('epinards', '1 sac (300 g)'), need('lait_coco', '1 boîte'),
+      need(CANNED_TOMATOES, '1 boîte (540 ml)'), need(ONION, '1'), need('ail', '2 gousses'), need('cari_poudre', '2 c. à soupe'),
+      need(prefer('riz_basmati', RICE), '1 1/2 tasse')],
+    steps: ['Faire revenir l’oignon, l’ail et le cari.', 'Ajouter les tomates, le lait de coco et les pois chiches; mijoter 15 min.',
+      'Incorporer les épinards jusqu’à ce qu’ils tombent. Servir sur le riz.'],
+  },
+  {
+    id: 'quiche-jambon-fromage', emoji: '🧀', name: 'Quiche jambon et fromage', time: 50, servings: 6, tags: ['brunch'],
+    ingredients: [main('jambon', '200 g'), need('oeufs', '4'), need(MILK, '1 tasse'), need('cheddar', '1 1/2 tasse'), need('croute_tarte', '1'),
+      opt('oignon_vert', '2'), opt('champignon', '1 tasse'), opt('epinards', '1 tasse')],
+    steps: ['Préchauffer le four à 375 °F.', 'Répartir jambon, fromage et légumes dans la croûte.', 'Battre œufs et lait, verser.', 'Cuire 35-40 min.'],
+  },
+  {
+    id: 'omelette-garnie', emoji: '🍳', name: 'Omelettes garnies', time: 20, servings: 4, tags: ['brunch', 'rapide'],
+    ingredients: [main('oeufs', '10'), need('poivron', '1'), need('champignon', '2 tasses'), need('cheddar', '1 tasse'), need(BUTTER, '2 c. à soupe'),
+      opt(ONION, '1'), opt('jambon', '200 g'), opt(['pain_tranche', 'baguette'], 'pour les rôties')],
+    steps: ['Sauter les légumes dans le beurre, réserver.', 'Pour chaque omelette, verser 5 œufs battus dans la poêle chaude, cuire à feu moyen.',
+      'Garnir de la moitié des légumes, du fromage et du jambon, plier. Couper chaque omelette en deux.'],
+  },
+  {
+    id: 'pates-thon-citron', emoji: '🍋', name: 'Pâtes au thon et citron', time: 20, servings: 4, tags: ['pâtes', 'économique'],
+    ingredients: [main('thon', '2 boîtes'), need(['pates_courtes', 'pates_longues'], '450 g'), need('citron', '1'), need('huile_olive', '1/4 tasse'),
+      need('ail', '2 gousses'), opt('epinards', '2 tasses'), opt('parmesan', 'au goût')],
+    steps: ['Cuire les pâtes.', 'Chauffer l’huile avec l’ail, ajouter le thon égoutté et les épinards.', 'Mélanger aux pâtes avec le jus et le zeste de citron.'],
+  },
+  {
+    id: 'poisson-pane', emoji: '🐠', name: 'Poisson pané maison et patates', time: 35, servings: 4, tags: ['poisson', 'famille'],
+    ingredients: [main('poisson_blanc', '600 g'), need('chapelure', '1 tasse'), need('oeufs', '2'), need(['farine', 'farine_ble_entier'], '1/2 tasse'),
+      need(POTATO, '4'), need('huile_vegetale', '3 c. à soupe'), opt('citron', '1'), opt('mayonnaise', 'pour la sauce tartare')],
+    steps: ['Couper les pommes de terre en quartiers, rôtir 30 min à 425 °F.', 'Paner le poisson : farine, œuf battu, chapelure.',
+      'Cuire au four 12-15 min sur la même plaque. Servir avec citron.'],
+  },
+  {
+    id: 'lasagne', emoji: '🍅', name: 'Lasagne à la viande', time: 75, servings: 8, tags: ['famille', 'congélation'],
+    ingredients: [main('boeuf_hache', '700 g'), need('lasagnes', '12 pâtes'), need('sauce_tomate', '2 pots'), need('mozzarella', '3 tasses'),
+      need(ONION, '1'), need('ail', '2 gousses'), opt('parmesan', '1/2 tasse'), opt('epinards', '2 tasses')],
+    steps: ['Dorer le bœuf avec l’oignon et l’ail, ajouter la sauce.', 'Cuire les pâtes.', 'Monter en étages : sauce, pâtes, mozzarella; répéter.',
+      'Couvrir de mozzarella et parmesan, cuire 45 min à 375 °F.'],
+  },
+  {
+    id: 'soupe-legumes', emoji: '🥕', name: 'Soupe aux légumes', time: 45, servings: 8, tags: ['végé', 'économique'],
+    ingredients: [main('carotte', '3'), main('chou', '1/4'), need('celeri', '2 branches'), need(ONION, '1'), need('pomme_de_terre', '2'),
+      need(CANNED_TOMATOES, '1 boîte (796 ml)'), need(['bouillon_legumes', 'bouillon_poulet'], '2 L'), opt('haricots_verts', '1 tasse'),
+      opt(DRIED_HERBS, '1 c. à thé')],
+    steps: ['Faire revenir l’oignon, le céleri et la carotte.', 'Ajouter le reste des légumes, les tomates et le bouillon.', 'Mijoter 30 min.'],
+  },
+  {
+    id: 'chaudree-mais', emoji: '🌽', name: 'Chaudrée de maïs et bacon', time: 40, servings: 6, tags: ['soupe', 'réconfort'],
+    ingredients: [main(['mais_grains', 'mais'], '3 tasses'), main('bacon', '6 tranches'), need('pomme_de_terre', '3'), need(ONION, '1'),
+      need(MILK, '2 tasses'), need(['bouillon_poulet', 'bouillon_legumes'], '2 tasses'), need(['farine', 'farine_ble_entier'], '2 c. à soupe'),
+      opt(['creme_15', 'creme_10', 'creme_35'], '1/2 tasse')],
+    steps: ['Cuire le bacon, réserver et garder 2 c. à soupe de gras.', 'Y faire revenir l’oignon, saupoudrer de farine.',
+      'Ajouter bouillon, lait, pommes de terre en dés; mijoter 15 min.', 'Ajouter le maïs et la crème, garnir de bacon émietté.'],
+  },
+  {
+    id: 'croque-monsieur', emoji: '🥪', name: 'Croque-monsieur', time: 20, servings: 4, tags: ['rapide', 'dîner'],
+    ingredients: [main('jambon', '8 tranches'), need(['pain_tranche', 'baguette'], '8 tranches'), need(['cheddar', 'mozzarella'], '1 1/2 tasse'),
+      need(BUTTER, '3 c. à soupe'), opt(['moutarde_dijon', 'moutarde_jaune'], '2 c. à soupe'), opt('laitue', 'en accompagnement')],
+    steps: ['Beurrer le pain, tartiner de moutarde.', 'Garnir de jambon et de fromage.', 'Gratiner 8-10 min à 400 °F.'],
+  },
+  {
+    id: 'soupe-courge', emoji: '🎃', name: 'Velouté de courge', time: 45, servings: 6, tags: ['soupe', 'automne', 'végé'],
+    ingredients: [main('courge', '1 (musquée)'), need(ONION, '1'), need(['bouillon_legumes', 'bouillon_poulet'], '1,5 L'), need('carotte', '2'),
+      opt(['creme_15', 'creme_10', 'creme_35'], '1/2 tasse'), opt('sirop_erable', '2 c. à soupe'), opt('gingembre', '1 c. à thé')],
+    steps: ['Faire revenir l’oignon.', 'Ajouter la courge et les carottes en cubes, le bouillon et le gingembre; mijoter 25 min.',
+      'Mixer, ajouter crème et sirop d’érable.'],
+  },
+  {
+    id: 'steak-hache-oignons', emoji: '🧅', name: 'Steak haché sauce aux oignons', time: 35, servings: 4, tags: ['québécois', 'classique'],
+    ingredients: [main('boeuf_hache', '600 g'), need(ONION, '2'), need(['bouillon_boeuf', 'bouillon_poulet'], '1 1/2 tasse'), need('pomme_de_terre', '1 kg'),
+      need(BUTTER, '3 c. à soupe'), need(['farine', 'farine_ble_entier'], '2 c. à soupe'), opt(MILK, '1/2 tasse'), opt('haricots_verts', '400 g')],
+    steps: ['Faire la purée de pommes de terre avec beurre et lait.', 'Façonner 4 galettes et les saisir 4 min par côté.',
+      'Dorer les oignons, saupoudrer de farine, mouiller au bouillon et laisser épaissir.', 'Napper les steaks de sauce.'],
+  },
+];
