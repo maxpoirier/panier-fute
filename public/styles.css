@@ -332,7 +332,8 @@ dialog::backdrop { background: rgb(42 31 26 / 0.5); backdrop-filter: blur(2px); 
 .list-store ul { margin: 0; padding-left: 20px; font-size: 0.9rem; }
 .list-store li small { color: var(--muted); }
 
-.footer { color: var(--muted); font-size: 0.82rem; padding-bottom: 90px; text-align: center; }
+/* Room for the floating "Ma liste" button below the last section. */
+main { padding-bottom: 90px; }
 
 @media (max-width: 640px) {
   .status { text-align: left; }
