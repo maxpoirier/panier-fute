@@ -344,6 +344,22 @@ main { padding-bottom: 90px; }
   .hero { border-radius: 0 0 24px 24px; }
 }
 
+/* ---------- Update screen ---------- */
+
+.update-screen {
+  position: fixed; inset: 0; z-index: 100; display: grid; place-items: center; padding: 24px;
+  background: linear-gradient(120deg, var(--tomato) 0%, var(--orange) 55%, var(--mustard) 100%);
+  animation: rise 0.3s ease both;
+}
+.update-card {
+  max-width: 360px; text-align: center; background: var(--surface); color: var(--ink);
+  border-radius: var(--radius); padding: 28px 24px; box-shadow: var(--shadow-lift);
+}
+.update-card h2 { justify-content: center; margin: 12px 0 8px; }
+.update-card p { margin: 0 0 20px; color: var(--muted); }
+.update-icon { width: 88px; height: 88px; border-radius: 22px; }
+.update-btn { width: 100%; padding: 14px; font-size: 1.05rem; }
+
 /* ---------- Phone layout: one screen per section, tab bar at the bottom ---------- */
 
 .tabbar, .to-recipes { display: none; }

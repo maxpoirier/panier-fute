@@ -24,7 +24,17 @@ npm test             # node:test, no network needed
 
 `.github/workflows/pages.yml` runs the tests and publishes `public/` to GitHub Pages on every push to `main`.
 
-When you change files in `public/`, bump `VERSION` in `public/sw.js` so installed apps drop their cached copy.
+### Releasing a new version
+
+1. Change files in `public/` and **bump `VERSION` in `public/sw.js`** (e.g. `'v5'` → `'v6'`). If you add a file, also add it to `APP_FILES`.
+2. Push to `main`.
+3. The next time someone opens the app online, or brings it back to the screen, they get a blocking
+   "Nouvelle version disponible" screen with a single **Installer la mise à jour** button. The app reloads on the new version.
+
+The installed app runs from its own cache (cache-first), so nothing changes until the user taps that button. Offline, the
+app keeps running the installed version. Without a `VERSION` bump the browser sees no new version, so nobody is prompted.
+
+`npm start` (localhost) skips the service worker, so local changes show up on a plain reload.
 
 ## How it works
 

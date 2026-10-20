@@ -510,7 +510,59 @@ function init() {
 
 init();
 
-// Makes the site installable as an Android app and usable offline with the last downloaded flyers.
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('./sw.js').catch(() => {});
+// ---------- App updates ----------
+
+// Blocks the app until the new version is installed: there is no way to dismiss this screen.
+function showUpdateScreen(worker) {
+  if ($('#update-screen')) return;
+  for (const region of document.querySelectorAll('header, main, nav, dialog, .list-fab')) region.inert = true;
+  document.body.append(el('div', { id: 'update-screen', class: 'update-screen', role: 'alertdialog', 'aria-modal': 'true', 'aria-labelledby': 'update-title' },
+    el('div', { class: 'update-card' },
+      el('img', { class: 'update-icon', src: 'icons/icon-192.png', alt: '' }),
+      el('h2', { id: 'update-title', text: 'Nouvelle version disponible 🎉' }),
+      el('p', { text: 'Une mise à jour du panier futé est prête. Installe-la pour continuer.' }),
+      el('button', {
+        type: 'button',
+        class: 'btn update-btn',
+        text: 'Installer la mise à jour',
+        onclick: (event) => {
+          event.currentTarget.disabled = true;
+          event.currentTarget.textContent = 'Installation…';
+          worker.postMessage('SKIP_WAITING');
+        },
+      }))));
+  $('#update-screen button').focus();
 }
+
+// Makes the site installable as an Android app, usable offline, and checks for new versions.
+async function watchForUpdates() {
+  // Locally, files change on every save; the cache-first service worker would only get in the way.
+  if (!('serviceWorker' in navigator) || ['localhost', '127.0.0.1'].includes(location.hostname)) return;
+  const hadController = Boolean(navigator.serviceWorker.controller);
+  const registration = await navigator.serviceWorker.register('./sw.js');
+
+  let reloading = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    // On a first install the worker takes control without a new version to load.
+    if (!hadController || reloading) return;
+    reloading = true;
+    location.reload();
+  });
+
+  const offer = (worker) => {
+    if (worker && navigator.serviceWorker.controller) showUpdateScreen(worker);
+  };
+  offer(registration.waiting);
+  registration.addEventListener('updatefound', () => {
+    const worker = registration.installing;
+    worker.addEventListener('statechange', () => {
+      if (worker.state === 'installed') offer(worker);
+    });
+  });
+  // An installed app can stay open for days; check again whenever it comes back to the screen.
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') registration.update().catch(() => {});
+  });
+}
+
+watchForUpdates().catch(() => {});
