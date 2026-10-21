@@ -878,6 +878,18 @@ h2 {
   font-weight: 700;
 }
 
+.more-recipes {
+  grid-column: 1 / -1;
+  justify-self: center;
+  padding: 12px 22px;
+}
+.recipe h3:focus {
+  outline: none;
+}
+.recipe h3:focus-visible {
+  outline: 3px solid var(--accent-text);
+  outline-offset: 2px;
+}
 .empty {
   color: var(--muted);
   padding: 32px;

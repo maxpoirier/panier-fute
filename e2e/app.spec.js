@@ -337,3 +337,25 @@ test('removing items from the list never reorders the stores or the other items'
   await page.getByRole('button', { name: /Tout rétablir/ }).click();
   expect(await order(), 'restored exactly where they were').toEqual(original);
 });
+
+test('recipes come 30 at a time; « Voir plus » adds the next ones without redrawing the first', async ({ page, context }) => {
+  await rememberName(context);
+  await mockFlipp(context);
+  await page.goto(`${site.url}#recettes`);
+  await page.getByLabel('Au prix régulier, max').selectOption('99');
+
+  const cards = page.locator('#recipes .recipe');
+  await expect(cards).toHaveCount(30);
+  await cards.first().evaluate((card) => {
+    card.dataset.marker = 'first-page';
+  });
+  const more = page.getByRole('button', { name: /^Voir \d+ recettes? de plus/ });
+  await more.click();
+  await expect(cards).toHaveCount(60);
+  await expect(cards.first(), 'first cards are kept, not redrawn').toHaveAttribute('data-marker', 'first-page');
+  await expect(cards.nth(30).locator('h3'), 'keyboard focus moves to the first new recipe').toBeFocused();
+
+  // Changing the sort starts again from the first page.
+  await page.getByLabel('Trier par').selectOption('serving');
+  await expect(cards).toHaveCount(30);
+});

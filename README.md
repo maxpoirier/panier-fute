@@ -80,7 +80,11 @@ lib/recommend.js ── each recipe ingredient accepts substitutes (e.g. long or
 ```
 
 - `public/lib/catalog/ingredients.js`: the ingredient catalogue. `kw` are match phrases, `ex` are exclusions, `hint` gives the examples shown in the pantry, and `price` is the regular price estimate.
-- `public/lib/catalog/recipes.js`: the recipes. `need(['pates_longues', 'pates_courtes'], …)` means "long pasta preferred, short pasta accepted". Every recipe serves at least 4.
+- `public/lib/catalog/recipes/`: the recipes, one file per theme (classics, chicken, beef & pork, fish, veggie, pasta,
+  soups & salads, tex-mex & sandwiches, world cuisines), gathered in `recipes.js`. They are written independently of any
+  week's flyers; the app prices them with whatever is on sale. `public/lib/catalog/recipe-kit.js` holds the helpers:
+  `need(PASTA, …)` means "short pasta preferred, long pasta accepted". `test/recipes.test.js` checks every recipe: unique
+  id and name, known ingredients, at least 4 servings, 30 minutes or less (the classics may take longer).
 - `public/app.js`: entry point; wires the UI modules together.
 - `public/ui/`: one module per part of the screen (`header`, `pantry`, `recipes`, `deals`, `list`, `weeks`, `screens`, `welcome`), the shared `state`, and `overlays` for full-screen prompts.
 - `public/pwa/updates.js`: service worker registration and the forced-update screen.
@@ -91,7 +95,7 @@ lib/recommend.js ── each recipe ingredient accepts substitutes (e.g. long or
 
 ### Adding a recipe or fixing a bad match
 
-1. Add the recipe to `RECIPES`. Every ingredient and substitute must exist in `INGREDIENTS` (a test checks this).
+1. Add the recipe to the file of its theme in `public/lib/catalog/recipes/`. `npm test` tells you if anything is off.
 2. If a flyer item matches the wrong ingredient, add an `ex` phrase to that ingredient and a case to `test/matcher.test.js`.
 
 ## Caveats

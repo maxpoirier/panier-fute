@@ -9,7 +9,7 @@ import { dealsFrom, renderDeals, wireDeals } from './ui/deals.js';
 import { renderStats, renderStatus, renderUserName, renderVersion, wireHeader } from './ui/header.js';
 import { bumpListButton, renderList, wireList } from './ui/list.js';
 import { renderPantry, wirePantry } from './ui/pantry.js';
-import { renderRecipes, visibleRecipes, wireRecipeFilters } from './ui/recipes.js';
+import { RECIPES_PAGE_SIZE, renderRecipes, visibleRecipes, wireRecipeFilters } from './ui/recipes.js';
 import { wireScreens } from './ui/screens.js';
 import { RETIRED_PREFS, state } from './ui/state.js';
 import { renderWeeks, wireWeeks } from './ui/weeks.js';
@@ -58,6 +58,7 @@ function loadStatus() {
 
 /** @param {import('./ui/state.js').Week} week */
 function selectWeek(week) {
+  if (week !== state.week) state.recipesShown = RECIPES_PAGE_SIZE;
   state.week = week;
   renderWeeks();
   state.deals = state.status.fetchedAt ? dealsFrom(getWeek(week).offers) : [];

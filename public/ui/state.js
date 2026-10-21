@@ -27,6 +27,7 @@ export const DEFAULT_POSTAL_CODE = 'G2G1B8';
  * @property {Week} week
  * @property {{ fetchedAt: string | null, weeks: Record<Week, StoreWeek[]> }} status
  * @property {RecipeView[]} recipes
+ * @property {number} recipesShown How many recipe cards are drawn; grows with « Voir plus ».
  * @property {Deal[]} deals
  */
 
@@ -49,5 +50,6 @@ export const state = {
   week: 'current',
   status: { fetchedAt: null, weeks: { current: [], next: [] } },
   recipes: [],
+  recipesShown: 30,
   deals: [],
 };

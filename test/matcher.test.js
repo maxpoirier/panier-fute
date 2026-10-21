@@ -75,3 +75,13 @@ test('ignores lamb chops and milk jugs', () => {
   assert.deepEqual(match("CÔTELETTES DE LONGE D'AGNEAU ASSAISONNÉES"), []);
   assert.deepEqual(match('PICHET À LAIT AVEC OUVRE-SAC EVERYDAY ESSENTIALS'), []);
 });
+
+test('new catalogue ingredients skip snacks and kids products', () => {
+  assert.deepEqual(match('TREMPETTES 200/227 G OU BOUCHÉES NAAN 200 G PC'), []);
+  assert.deepEqual(match('GRUAU AU FRIGO OU GRANOLA BIOLOGIQUES OATBOX'), []);
+  assert.deepEqual(match('YOGOURT IOGÖ NANÖ POCHETTES (4 x 90 g)'), []);
+  assert.deepEqual(match('PAINS PITA SANABEL'), ['pita']);
+  assert.deepEqual(match('GRUAU QUAKER'), ['gruau']);
+  assert.deepEqual(match('PORC HACHÉ MAIGRE'), ['porc_hache']);
+  assert.deepEqual(match('DINDE OU POULET HACHÉ MIEUX-ÊTRE'), ['dinde_hachee']);
+});

@@ -1,11 +1,14 @@
 // @ts-check
 import { writePref } from '../lib/prefs.js';
-import { $, el, money, productImage, storeLogo } from './dom.js';
+import { $, compact, el, money, productImage, storeLogo } from './dom.js';
 import { PREFS, state } from './state.js';
 
 /** @typedef {import('./state.js').RecipeView} RecipeView */
 /** @typedef {RecipeView['items'][number]} RecipeItem */
 /** @typedef {(recipe: RecipeView) => void} ToggleList */
+
+// Hundreds of recipes can match: drawing them all at once would make a phone sluggish, so they come in pages.
+export const RECIPES_PAGE_SIZE = 30;
 
 /** @type {Record<string, string>} */
 const STATUS_ICON = { deal: '🏷️', have: '✅', buy: '🛒', optional: '➕' };
@@ -90,7 +93,7 @@ function recipeCard(recipe, index, showMedal, onToggleList, openSteps) {
       el(
         'div',
         {},
-        el('h3', { text: recipe.name }),
+        el('h3', { text: recipe.name, tabindex: '-1' }),
         el('p', { class: 'meta', text: `⏱️ ${recipe.time} min · 🍽️ ${recipe.servings} portions` }),
       ),
       el(
@@ -125,6 +128,39 @@ function recipeCard(recipe, index, showMedal, onToggleList, openSteps) {
       }),
     ),
   );
+}
+
+/**
+ * "Voir plus" button: adds the next page of cards below the others, without redrawing those already shown, and moves
+ * the keyboard focus to the first new recipe.
+ * @param {RecipeView[]} visible
+ * @param {ToggleList} onToggleList
+ * @param {Set<string>} openSteps
+ * @returns {HTMLElement | null}
+ */
+function moreButton(visible, onToggleList, openSteps) {
+  const remaining = visible.length - state.recipesShown;
+  if (remaining <= 0) return null;
+  const next = Math.min(RECIPES_PAGE_SIZE, remaining);
+  const button = el('button', {
+    type: 'button',
+    class: 'btn ghost more-recipes',
+    text: `Voir ${next} recette${next > 1 ? 's' : ''} de plus (${remaining} restante${remaining > 1 ? 's' : ''})`,
+    onclick: () => {
+      const from = state.recipesShown;
+      state.recipesShown += RECIPES_PAGE_SIZE;
+      const showMedal = state.sortBy !== 'score';
+      const cards = visible.slice(from, state.recipesShown).map((recipe, offset) => {
+        const card = recipeCard(recipe, from + offset, showMedal, onToggleList, openSteps);
+        // Staggered fade-in counted from the first new card, not from the top of the list.
+        card.style.setProperty('--i', String(offset));
+        return card;
+      });
+      button.replaceWith(...cards, ...compact([moreButton(visible, onToggleList, openSteps)]));
+      /** @type {HTMLElement | null} */ (cards[0]?.querySelector('h3') ?? null)?.focus();
+    },
+  });
+  return button;
 }
 
 /** @param {string} icon @param {string} text */
@@ -163,7 +199,10 @@ export function renderRecipes(visible, onToggleList) {
     return;
   }
   const showMedal = state.sortBy !== 'score';
-  container.replaceChildren(...visible.map((recipe, index) => recipeCard(recipe, index, showMedal, onToggleList, openSteps)));
+  container.replaceChildren(
+    ...visible.slice(0, state.recipesShown).map((recipe, index) => recipeCard(recipe, index, showMedal, onToggleList, openSteps)),
+    ...compact([moreButton(visible, onToggleList, openSteps)]),
+  );
 }
 
 /** @param {() => void} onChange */
@@ -175,11 +214,13 @@ export function wireRecipeFilters(onChange) {
   sortBy.value = state.sortBy;
   maxBuy.value = String(state.maxBuy);
   sortBy.addEventListener('change', () => {
+    state.recipesShown = RECIPES_PAGE_SIZE;
     state.sortBy = /** @type {import('./state.js').State['sortBy']} */ (sortBy.value);
     writePref(PREFS.sortBy, state.sortBy);
     onChange();
   });
   maxBuy.addEventListener('change', () => {
+    state.recipesShown = RECIPES_PAGE_SIZE;
     state.maxBuy = Number(maxBuy.value);
     writePref(PREFS.maxBuy, state.maxBuy);
     onChange();
