@@ -85,3 +85,13 @@ test('new catalogue ingredients skip snacks and kids products', () => {
   assert.deepEqual(match('PORC HACHÉ MAIGRE'), ['porc_hache']);
   assert.deepEqual(match('DINDE OU POULET HACHÉ MIEUX-ÊTRE'), ['dinde_hachee']);
 });
+
+test('herbs and spices are filed under « Épices et fines herbes », not with the vegetables', () => {
+  for (const id of ['persil', 'coriandre', 'basilic', 'ciboulette', 'aneth', 'menthe', 'thym', 'origan', 'cumin', 'epices_steak']) {
+    assert.equal(INGREDIENTS_BY_ID.get(id).cat, 'epice', id);
+  }
+  assert.equal(INGREDIENTS_BY_ID.get('gingembre').cat, 'legume', 'fresh ginger root stays with the produce');
+  assert.deepEqual(match('GINGEMBRE MOULU CLUB HOUSE'), ['gingembre_moulu']);
+  assert.deepEqual(match('AIL EN POUDRE'), ['poudre_ail']);
+  assert.deepEqual(match('RADIS EN FEUILLES MENTHE'), []);
+});

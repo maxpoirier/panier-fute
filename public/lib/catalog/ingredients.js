@@ -17,11 +17,11 @@
  */
 
 export const CATEGORIES = {
-  viande: 'Viandes et poissons',
+  viande: 'Viandes, poissons et tofu',
   legume: 'Fruits et légumes',
   laitier: 'Produits laitiers et œufs',
   feculent: 'Pâtes, riz et pains',
-  conserve: 'Conserves et bouillons',
+  conserve: 'Conserves, légumineuses et noix',
   condiment: 'Sauces et condiments',
   epice: 'Épices et fines herbes',
   base: 'Huiles et essentiels de cuisson',
@@ -403,7 +403,7 @@ export const INGREDIENTS = [
     cat: 'legume',
     price: 2,
     kw: ['gingembre', 'ginger'],
-    ex: ['biere', 'ale', 'the', 'tea', 'biscuit', 'boisson', 'soda', 'cristallise'],
+    ex: ['biere', 'ale', 'the', 'tea', 'biscuit', 'boisson', 'soda', 'cristallise', 'moulu', 'ground'],
   },
   { id: 'carotte', name: 'Carottes', cat: 'legume', price: 3, kw: ['carotte', 'carrot'], ex: ['gateau', 'cake', 'muffin', 'jus', 'juice'] },
   {
@@ -662,23 +662,6 @@ export const INGREDIENTS = [
   },
   { id: 'avocat', name: 'Avocats', cat: 'legume', price: 2, kw: ['avocat', 'avocado'], ex: ['huile', 'oil', 'guacamole', 'trempette'] },
 
-  {
-    id: 'coriandre',
-    name: 'Coriandre fraîche',
-    cat: 'legume',
-    price: 1.5,
-    kw: ['coriandre', 'cilantro'],
-    ex: ['graine', 'seed', 'moulue', 'ground', 'poudre'],
-  },
-  { id: 'persil', name: 'Persil frais', cat: 'legume', price: 1.5, kw: ['persil', 'parsley'], ex: ['seche', 'dried', 'flocon', 'flake'] },
-  {
-    id: 'basilic',
-    name: 'Basilic frais',
-    cat: 'legume',
-    price: 3,
-    kw: ['basilic', 'basil'],
-    ex: ['seche', 'dried', 'pesto', 'sauce', 'pate', 'tomate'],
-  },
   { id: 'aubergine', name: 'Aubergine', cat: 'legume', price: 2.5, kw: ['aubergine', 'eggplant'], ex: ['trempette', 'dip'] },
   { id: 'poireau', name: 'Poireaux', cat: 'legume', price: 3, kw: ['poireau', 'leek'], ex: ['soupe', 'soup'] },
   {
@@ -1211,6 +1194,14 @@ export const INGREDIENTS = [
     kw: ['lentille', 'lentil'],
     ex: ['soupe', 'soup', 'chips', 'croustille', 'pates', 'pasta', 'farine'],
   },
+  {
+    id: 'arachides',
+    name: 'Arachides',
+    cat: 'conserve',
+    price: 5,
+    kw: ['arachide', 'peanut'],
+    ex: ['beurre', 'butter', 'huile', 'oil', 'chocolat', 'barre', 'bar', 'biscuit'],
+  },
 
   // Sauces et condiments
   {
@@ -1328,14 +1319,6 @@ export const INGREDIENTS = [
     kw: ['beurre d arachide', 'peanut butter'],
     ex: ['biscuit', 'barre', 'chocolat', 'cookie'],
   },
-  {
-    id: 'arachides',
-    name: 'Arachides',
-    cat: 'condiment',
-    price: 5,
-    kw: ['arachide', 'peanut'],
-    ex: ['beurre', 'butter', 'huile', 'oil', 'chocolat', 'barre', 'bar', 'biscuit'],
-  },
 
   { id: 'pesto', name: 'Pesto', cat: 'condiment', price: 5, kw: ['pesto'], ex: ['pates', 'repas', 'pizza', 'pain'] },
   {
@@ -1356,6 +1339,7 @@ export const INGREDIENTS = [
   },
 
   // Épices et fines herbes
+  // Épices et mélanges
   { id: 'cumin', name: 'Cumin', cat: 'epice', price: 4, kw: ['cumin'] },
   { id: 'paprika', name: 'Paprika', hint: 'doux ou fumé', cat: 'epice', price: 4, kw: ['paprika'], ex: ['chips'] },
   {
@@ -1374,6 +1358,82 @@ export const INGREDIENTS = [
     price: 4,
     kw: ['cari en poudre', 'curry powder', 'garam masala', 'poudre de cari'],
   },
+  {
+    id: 'curcuma',
+    name: 'Curcuma',
+    cat: 'epice',
+    price: 4,
+    kw: ['curcuma', 'turmeric'],
+    ex: ['the', 'tea', 'boisson', 'latte', 'capsule', 'supplement'],
+  },
+  {
+    id: 'coriandre_moulue',
+    name: 'Coriandre moulue',
+    hint: 'ou en graines',
+    cat: 'epice',
+    price: 3.5,
+    kw: ['coriandre moulue', 'graines de coriandre', 'ground coriander', 'coriander seed'],
+  },
+  { id: 'gingembre_moulu', name: 'Gingembre moulu', cat: 'epice', price: 3.5, kw: ['gingembre moulu', 'ground ginger'] },
+  {
+    id: 'cannelle',
+    name: 'Cannelle',
+    cat: 'epice',
+    price: 4,
+    kw: ['cannelle', 'cinnamon'],
+    ex: ['brioche', 'cereale', 'gomme', 'bun', 'roll', 'pain'],
+  },
+  { id: 'muscade', name: 'Muscade', cat: 'epice', price: 4, kw: ['muscade', 'nutmeg'] },
+  {
+    id: 'poudre_ail',
+    name: 'Ail en poudre',
+    cat: 'epice',
+    price: 3.5,
+    kw: ['poudre d ail', 'ail en poudre', 'garlic powder'],
+    ex: ['sel', 'salt'],
+  },
+  {
+    id: 'poudre_oignon',
+    name: 'Oignon en poudre',
+    cat: 'epice',
+    price: 3.5,
+    kw: ['poudre d oignon', 'oignon en poudre', 'onion powder'],
+    ex: ['sel', 'salt', 'soupe'],
+  },
+  {
+    id: 'piment_flocons',
+    name: 'Piment broyé ou cayenne',
+    hint: 'flocons de piment',
+    cat: 'epice',
+    price: 3.5,
+    kw: ['flocons de piment', 'piment broye', 'piment de cayenne', 'cayenne', 'chili flakes', 'red pepper flakes'],
+    ex: ['sauce', 'chips', 'croustille'],
+  },
+  {
+    id: 'epices_steak',
+    name: 'Épices à steak',
+    hint: 'style Montréal',
+    cat: 'epice',
+    price: 4,
+    kw: ['epices a steak', 'epice a steak', 'assaisonnement a steak', 'montreal steak', 'steak spice'],
+  },
+  {
+    id: 'cajun',
+    name: 'Assaisonnement cajun',
+    cat: 'epice',
+    price: 4,
+    kw: ['cajun'],
+    ex: ['crevette', 'shrimp', 'poulet', 'chicken', 'chips', 'croustille', 'saucisse', 'saveur', 'frite', 'mayonnaise'],
+  },
+  {
+    id: 'graines_sesame',
+    name: 'Graines de sésame',
+    cat: 'epice',
+    price: 3.5,
+    kw: ['graines de sesame', 'sesame seeds'],
+    ex: ['huile', 'oil', 'pain', 'bagel', 'barre', 'craquelin', 'cracker'],
+  },
+  // Herbes séchées
   { id: 'thym', name: 'Thym séché', cat: 'epice', price: 4, kw: ['thym', 'thyme'], ex: HERB_EX },
   { id: 'origan', name: 'Origan séché', cat: 'epice', price: 4, kw: ['origan', 'oregano'], ex: HERB_EX },
   {
@@ -1386,12 +1446,57 @@ export const INGREDIENTS = [
     ex: HERB_EX,
   },
   {
-    id: 'cannelle',
-    name: 'Cannelle',
+    id: 'romarin',
+    name: 'Romarin',
+    hint: 'séché ou frais',
     cat: 'epice',
-    price: 4,
-    kw: ['cannelle', 'cinnamon'],
-    ex: ['brioche', 'cereale', 'gomme', 'bun', 'roll', 'pain'],
+    price: 3.5,
+    kw: ['romarin', 'rosemary'],
+    ex: ['pain', 'croustille', 'craquelin', 'cracker', 'saveur', 'poulet', 'agneau', 'focaccia'],
+  },
+  { id: 'laurier', name: 'Feuilles de laurier', cat: 'epice', price: 3, kw: ['laurier', 'feuilles de laurier', 'bay leaves', 'bay leaf'] },
+  // Fines herbes fraîches
+  { id: 'persil', name: 'Persil frais', cat: 'epice', price: 1.5, kw: ['persil', 'parsley'], ex: ['seche', 'dried', 'flocon', 'flake'] },
+  {
+    id: 'coriandre',
+    name: 'Coriandre fraîche',
+    cat: 'epice',
+    price: 1.5,
+    kw: ['coriandre', 'cilantro'],
+    ex: ['graine', 'seed', 'moulue', 'ground', 'poudre'],
+  },
+  {
+    id: 'basilic',
+    name: 'Basilic frais',
+    cat: 'epice',
+    price: 3,
+    kw: ['basilic', 'basil'],
+    ex: ['seche', 'dried', 'pesto', 'sauce', 'pate', 'tomate'],
+  },
+  {
+    id: 'ciboulette',
+    name: 'Ciboulette fraîche',
+    cat: 'epice',
+    price: 2.5,
+    kw: ['ciboulette', 'chives'],
+    ex: ['fromage', 'cheese', 'trempette', 'creme sure', 'chips', 'croustille', 'saveur'],
+  },
+  {
+    id: 'aneth',
+    name: 'Aneth',
+    hint: 'frais ou séché',
+    cat: 'epice',
+    price: 2.5,
+    kw: ['aneth', 'dill'],
+    ex: ['cornichon', 'pickle', 'trempette', 'dip', 'chips', 'croustille', 'saveur', 'marinade'],
+  },
+  {
+    id: 'menthe',
+    name: 'Menthe fraîche',
+    cat: 'epice',
+    price: 2.5,
+    kw: ['menthe fraiche', 'menthe', 'mint'],
+    ex: ['bonbon', 'gomme', 'the', 'tisane', 'tea', 'chocolat', 'after eight', 'saveur', 'biscuit', 'rince bouche', 'mouthwash', 'radis'],
   },
 
   // Huiles et essentiels de cuisson
