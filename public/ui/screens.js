@@ -15,7 +15,18 @@ function showScreen() {
   if (changed) window.scrollTo(0, 0);
 }
 
+// The bottom tab bar grows with the phone's text size; content and the sticky "Voir les recettes" button are placed
+// above its real height rather than a guess.
+function trackTabbarHeight() {
+  const tabbar = document.querySelector('.tabbar');
+  if (!(tabbar instanceof HTMLElement)) return;
+  const update = () => document.documentElement.style.setProperty('--tabbar-height', `${tabbar.offsetHeight}px`);
+  new ResizeObserver(update).observe(tabbar);
+  update();
+}
+
 export function wireScreens() {
   window.addEventListener('hashchange', showScreen);
   showScreen();
+  trackTabbarHeight();
 }

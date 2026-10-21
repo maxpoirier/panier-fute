@@ -178,3 +178,100 @@ for (const width of [412, 1280]) {
     }
   });
 }
+
+test('in the shopping list, items can be ticked (struck through), removed one by one or several at once, and restored', async ({
+  page,
+  context,
+}) => {
+  await rememberName(context);
+  await mockFlipp(context);
+  await page.goto(`${site.url}#recettes`);
+  for (const card of (await page.locator('.recipe').all()).slice(0, 2)) await card.getByRole('button', { name: '+ Ma liste' }).click();
+  await page.locator('#list-fab').click();
+
+  const items = page.locator('#list-body li');
+  const total = page.locator('.list-total');
+  const count = await items.count();
+  expect(count).toBeGreaterThan(3);
+  const totalBefore = await total.textContent();
+
+  const first = items.first();
+  await first.getByRole('checkbox').check();
+  await expect(first).toHaveClass(/done/);
+  await expect(first.locator('.list-name')).toHaveCSS('text-decoration-line', 'line-through');
+  await expect(first.getByRole('checkbox'), 'focus stays on the box').toBeFocused();
+
+  const removedName = await items
+    .nth(1)
+    .locator('.list-name')
+    .evaluate((node) => node.firstChild.textContent);
+  await page.getByRole('button', { name: `Retirer ${removedName} de la liste` }).click();
+  await expect(items).toHaveCount(count - 1);
+  await expect(total).not.toHaveText(totalBefore);
+
+  await items.nth(1).getByRole('checkbox').check();
+  await page.getByRole('button', { name: 'Retirer les articles cochés (2)' }).click();
+  await expect(items).toHaveCount(count - 3);
+
+  await page.getByRole('button', { name: /Tout rétablir \(3 retirés\)/ }).click();
+  await expect(items).toHaveCount(count);
+  await expect(total).toHaveText(totalBefore);
+  await expect(items.first(), 'still ticked after being restored').toHaveClass(/done/);
+});
+
+test('the cart shows the number of recipes and the estimated total, on the pantry screen too', async ({ page, context }) => {
+  await rememberName(context);
+  await mockFlipp(context);
+  await page.setViewportSize({ width: 412, height: 860 });
+  await page.goto(`${site.url}#recettes`);
+  await page.locator('.recipe').first().getByRole('button', { name: '+ Ma liste' }).click();
+  await page.locator('.recipe').nth(1).getByRole('button', { name: '+ Ma liste' }).click();
+
+  await page.locator('.tabbar').getByRole('link', { name: 'Garde-manger' }).click();
+  const tab = page.locator('#tab-list');
+  await expect(tab.locator('.count')).toHaveText('2');
+  const shown = await tab.locator('.cart-total').textContent();
+  expect(shown).toMatch(/^\d+,\d{2}\s\$$/);
+  await expect(tab).toHaveAccessibleName(`Ma liste : 2 recettes, environ ${shown}`);
+
+  await tab.click();
+  await expect(page.locator('.list-total')).toHaveText(`Total estimé : ${shown}`);
+  await page
+    .getByRole('button', { name: /^Retirer .* de la liste$/ })
+    .first()
+    .click();
+  await expect(tab.locator('.cart-total'), 'follows removals').not.toHaveText(shown);
+  await expect(tab.locator('.count'), 'still counts recipes').toHaveText('2');
+});
+
+for (const textSize of ['normal', 'large']) {
+  test(`on a phone, "Voir les recettes" is never hidden behind the tab bar (${textSize} text)`, async ({ page, context }) => {
+    await rememberName(context);
+    await mockFlipp(context);
+    await page.setViewportSize({ width: 412, height: 860 });
+    await page.goto(site.url);
+    // Android's "large text" setting scales the root font size.
+    if (textSize === 'large') await page.evaluate(() => (document.documentElement.style.fontSize = '22px'));
+    // A recipe in the list shows the total pill, which sticks out above the "Liste" tab.
+    await page.locator('.tabbar').getByRole('link', { name: 'Recettes' }).click();
+    await page.locator('.recipe').first().getByRole('button', { name: '+ Ma liste' }).click();
+    await page.locator('.tabbar').getByRole('link', { name: 'Garde-manger' }).click();
+    await expect(page.locator('#tab-list-total')).toBeVisible();
+    await page.getByRole('button', { name: /^Ail frais/ }).click();
+
+    const button = page.locator('#to-recipes');
+    const tabbar = page.locator('.tabbar');
+    for (const where of ['top', 'bottom']) {
+      await page.evaluate((to) => window.scrollTo(0, to === 'top' ? 0 : document.body.scrollHeight), where);
+      await page.waitForTimeout(100);
+      const box = await button.boundingBox();
+      const bar = await tabbar.boundingBox();
+      const pill = await page.locator('#tab-list-total').boundingBox();
+      const coveredTop = Math.min(bar.y, pill ? pill.y : bar.y);
+      expect(box.y, `${where}: fully on screen`).toBeGreaterThanOrEqual(0);
+      expect(box.y + box.height, `${where}: entirely above the tab bar`).toBeLessThanOrEqual(coveredTop);
+    }
+    await button.click();
+    await expect(page.locator('#plan')).toBeVisible();
+  });
+}

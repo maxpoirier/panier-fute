@@ -126,11 +126,18 @@
       <a href="#recettes" data-screen="recettes"><span class="icon" aria-hidden="true">🍽️</span>Recettes</a>
       <a href="#prix" data-screen="prix"><span class="icon" aria-hidden="true">🏷️</span>Prix</a>
       <button id="tab-list" type="button">
-        <span class="icon" aria-hidden="true">🛒</span>Liste<span id="tab-list-count" class="count" hidden>0</span>
+        <span id="tab-list-total" class="cart-total" hidden></span><span class="icon" aria-hidden="true">🛒</span>Liste<span
+          id="tab-list-count"
+          class="count"
+          hidden
+          >0</span
+        >
       </button>
     </nav>
 
-    <button id="list-fab" class="list-fab" type="button" hidden>🛒 Ma liste <span id="list-count">0</span></button>
+    <button id="list-fab" class="list-fab" type="button" hidden>
+      <span id="list-fab-total" class="cart-total"></span>🛒 Ma liste <span id="list-count" class="count">0</span>
+    </button>
     <dialog id="list-dialog">
       <form method="dialog" class="dialog-head">
         <h2 id="list-title">🛒 Ma liste d’épicerie</h2>

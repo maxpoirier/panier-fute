@@ -22,6 +22,8 @@ export const DEFAULT_POSTAL_CODE = 'G2G1B8';
  * @property {{ store: string, title: string }[]} failedFlyers
  * @property {Set<string>} pantry Ingredient ids the user has.
  * @property {Map<string, string>} list Recipe id → name, for the shopping list.
+ * @property {Set<string>} listChecked Ingredient ids ticked off in the shopping list.
+ * @property {Set<string>} listRemoved Ingredient ids taken off the shopping list.
  * @property {Week} week
  * @property {{ fetchedAt: string | null, weeks: Record<Week, StoreWeek[]> }} status
  * @property {RecipeView[]} recipes
@@ -42,6 +44,8 @@ export const state = {
   failedFlyers: [],
   pantry: new Set(),
   list: new Map(),
+  listChecked: new Set(),
+  listRemoved: new Set(),
   week: 'current',
   status: { fetchedAt: null, weeks: { current: [], next: [] } },
   recipes: [],
