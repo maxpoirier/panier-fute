@@ -1,6 +1,6 @@
 {
   "name": "panier-fute-quebec",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "Compare les circulaires IGA, Super C, Maxi et Walmart et propose des recettes selon les rabais. Site web + app Android (PWA).",
   "type": "module",
   "private": true,

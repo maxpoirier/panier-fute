@@ -247,7 +247,10 @@ test('the cart shows the number of recipes and the estimated total, on the pantr
 });
 
 for (const textSize of ['normal', 'large']) {
-  test(`on a phone, "Voir les recettes" is never hidden behind the tab bar (${textSize} text)`, async ({ page, context }) => {
+  test(`on a phone, "Voir les recettes" waits at the end of the ingredients, fully visible once scrolled to (${textSize} text)`, async ({
+    page,
+    context,
+  }) => {
     await rememberName(context);
     await mockFlipp(context);
     await page.setViewportSize({ width: 412, height: 860 });
@@ -262,21 +265,17 @@ for (const textSize of ['normal', 'large']) {
     await page.getByRole('button', { name: /^Ail frais/ }).click();
 
     const button = page.locator('#to-recipes');
-    const tabbar = page.locator('.tabbar');
-    for (const where of ['top', 'bottom']) {
-      await page.evaluate((to) => window.scrollTo(0, to === 'top' ? 0 : document.body.scrollHeight), where);
-      await page.waitForTimeout(100);
-      const box = await button.boundingBox();
-      const bar = await tabbar.boundingBox();
-      const pill = await page.locator('#tab-list-total').boundingBox();
-      const coveredTop = Math.min(bar.y, pill ? pill.y : bar.y);
-      expect(box.y, `${where}: fully on screen`).toBeGreaterThanOrEqual(0);
-      expect(box.y + box.height, `${where}: entirely above the tab bar`).toBeLessThanOrEqual(coveredTop);
-    }
-    // Scrolled to the bottom, the last box of ingredients is fully visible above the button.
-    const lastBox = await page.locator('.pantry-group').last().boundingBox();
+    await page.evaluate(() => window.scrollTo(0, 0));
+    await expect(button, 'not shown before reaching the end of the list').not.toBeInViewport();
+
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+    await page.waitForTimeout(100);
     const box = await button.boundingBox();
-    expect(lastBox.y + lastBox.height, 'last ingredient box not covered').toBeLessThanOrEqual(box.y);
+    const bar = await page.locator('.tabbar').boundingBox();
+    const pill = await page.locator('#tab-list-total').boundingBox();
+    const lastBox = await page.locator('.pantry-group').last().boundingBox();
+    expect(box.y + box.height, 'entirely above the tab bar and its total pill').toBeLessThanOrEqual(Math.min(bar.y, pill.y));
+    expect(lastBox.y + lastBox.height, 'below the last box of ingredients, not over it').toBeLessThanOrEqual(box.y);
     await button.click();
     await expect(page.locator('#plan')).toBeVisible();
   });

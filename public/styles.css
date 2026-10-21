@@ -1351,18 +1351,14 @@ main.wrap {
   .list-fab {
     display: none;
   }
-  /* Stays just above the tab bar (and the total pill on its "Liste" tab) while ingredients are being ticked. */
+  /* At the very end of the ingredients; main.wrap's bottom padding keeps it clear of the tab bar once scrolled to. */
   .to-recipes {
-    position: sticky;
-    bottom: calc(var(--tabbar-height, 72px) + 20px);
-    z-index: 4;
     display: block;
     text-align: center;
     text-decoration: none;
     margin-top: 18px;
     padding: 14px;
     font-size: 1.05rem;
-    box-shadow: 0 6px 18px rgb(0 0 0 / 0.25);
   }
 
   .tabbar {

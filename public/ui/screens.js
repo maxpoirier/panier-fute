@@ -15,8 +15,8 @@ function showScreen() {
   if (changed) window.scrollTo(0, 0);
 }
 
-// The bottom tab bar grows with the phone's text size; content and the sticky "Voir les recettes" button are placed
-// above its real height rather than a guess.
+// The bottom tab bar grows with the phone's text size; the space left for it below the content (and the "Voir les
+// recettes" button at its end) follows its real height rather than a guess.
 function trackTabbarHeight() {
   const tabbar = document.querySelector('.tabbar');
   if (!(tabbar instanceof HTMLElement)) return;
