@@ -1139,7 +1139,8 @@ dialog::backdrop {
 }
 
 /* Room for the floating "Ma liste" button below the last section. */
-main {
+/* main.wrap, not main: .wrap's padding shorthand would otherwise win and remove this space. */
+main.wrap {
   padding-bottom: 90px;
 }
 
@@ -1254,7 +1255,7 @@ main {
     display: block;
     animation: rise 0.3s ease both;
   }
-  main {
+  main.wrap {
     /* Room for the bottom tab bar (its height is measured, see ui/screens.js) and the total pill above it. */
     padding-bottom: calc(var(--tabbar-height, 72px) + 32px);
   }

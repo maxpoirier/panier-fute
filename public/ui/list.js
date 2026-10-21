@@ -1,4 +1,5 @@
 // @ts-check
+import { STORES } from '../lib/flipp.js';
 import { $, compact, el, isStore, money, storeLogo } from './dom.js';
 import { state } from './state.js';
 
@@ -6,25 +7,33 @@ const ELSEWHERE = 'Ailleurs (prix régulier)';
 
 /** @typedef {{ id: string, name: string, offer: import('./state.js').Offer | null, cost: number }} ListEntry */
 
-// Rebuilt from the latest recommendations so prices follow the selected week. Ticked and removed items are kept by
-// ingredient id, so they stay ticked or removed when the week or the chosen recipes change.
+// Stores always appear in this order, so ticking or removing an item never moves the others around.
+const STORE_ORDER = [...STORES, ELSEWHERE];
+
+/**
+ * Rebuilt from the latest recommendations so prices follow the selected week. Items follow the order the recipes were
+ * added in, worked out *before* dropping removed items, so removing one leaves everything else in place and "Tout
+ * rétablir" puts it back exactly where it was. Ticked and removed items are kept by ingredient id, so they stay ticked
+ * or removed when the week changes.
+ */
 function buildList() {
+  const recipesById = new Map(state.recipes.map((recipe) => [recipe.id, recipe]));
   /** @type {Map<string, ListEntry[]>} */
-  const byStore = new Map();
+  const byStore = new Map(STORE_ORDER.map((store) => [store, []]));
   const seen = new Set();
   let total = 0;
-  for (const recipe of state.recipes.filter((candidate) => state.list.has(candidate.id))) {
-    for (const item of recipe.items) {
+  for (const recipeId of state.list.keys()) {
+    for (const item of recipesById.get(recipeId)?.items ?? []) {
       if (seen.has(item.id) || (item.status !== 'deal' && item.status !== 'buy')) continue;
       seen.add(item.id);
       if (state.listRemoved.has(item.id)) continue;
       total += item.cost;
       const store = item.status === 'deal' ? item.offers[0].store : ELSEWHERE;
-      const entries = byStore.get(store) ?? [];
-      entries.push({ id: item.id, name: item.name, offer: item.status === 'deal' ? item.offers[0] : null, cost: item.cost });
-      byStore.set(store, entries);
+      if (!byStore.has(store)) byStore.set(store, []);
+      byStore.get(store)?.push({ id: item.id, name: item.name, offer: item.status === 'deal' ? item.offers[0] : null, cost: item.cost });
     }
   }
+  for (const [store, entries] of byStore) if (!entries.length) byStore.delete(store);
   return { byStore, total, entries: [...byStore.values()].flat() };
 }
 

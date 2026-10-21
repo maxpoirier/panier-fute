@@ -273,7 +273,68 @@ for (const textSize of ['normal', 'large']) {
       expect(box.y, `${where}: fully on screen`).toBeGreaterThanOrEqual(0);
       expect(box.y + box.height, `${where}: entirely above the tab bar`).toBeLessThanOrEqual(coveredTop);
     }
+    // Scrolled to the bottom, the last box of ingredients is fully visible above the button.
+    const lastBox = await page.locator('.pantry-group').last().boundingBox();
+    const box = await button.boundingBox();
+    expect(lastBox.y + lastBox.height, 'last ingredient box not covered').toBeLessThanOrEqual(box.y);
     await button.click();
     await expect(page.locator('#plan')).toBeVisible();
   });
 }
+
+test('on a computer, the floating "Ma liste" button never covers the end of the page', async ({ page, context }) => {
+  await rememberName(context);
+  await mockFlipp(context);
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.goto(`${site.url}#recettes`);
+  await page.locator('.recipe').first().getByRole('button', { name: '+ Ma liste' }).click();
+  await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+  await page.waitForTimeout(100);
+  const fab = await page.locator('#list-fab').boundingBox();
+  const lastRow = await page.locator('#deals-table tbody tr').last().boundingBox();
+  expect(lastRow.y + lastRow.height, 'last row of the price table not covered').toBeLessThanOrEqual(fab.y - 4);
+});
+
+test('removing items from the list never reorders the stores or the other items', async ({ page, context }) => {
+  await rememberName(context);
+  await mockFlipp(context);
+  await page.goto(`${site.url}#recettes`);
+  // More recipes, hence more stores in the list.
+  await page.locator('#sort-by').waitFor();
+  await page.getByLabel('Au prix régulier, max').selectOption('99');
+  await expect(page.locator('.recipe').nth(2)).toBeVisible();
+  for (const card of (await page.locator('.recipe').all()).slice(0, 3)) await card.getByRole('button', { name: '+ Ma liste' }).click();
+  await page.locator('#list-fab').click();
+
+  // Each line as "store › item", in screen order.
+  const order = () =>
+    page
+      .locator('#list-body .list-store')
+      .evaluateAll((sections) =>
+        sections.flatMap((section) =>
+          [...section.querySelectorAll('li')].map((li) => `${section.querySelector('h3').textContent.trim()} › ${li.dataset.id}`),
+        ),
+      );
+  const original = await order();
+  expect(new Set(original.map((line) => line.split(' › ')[0])).size, 'several stores').toBeGreaterThan(1);
+  const without = (...ids) => original.filter((line) => !ids.some((id) => line.endsWith(` › ${id}`)));
+  const idAt = (index) => original[index].split(' › ')[1];
+
+  // The first line: its store's first item, which used to decide where the store appeared.
+  await page.locator(`#list-body li[data-id="${idAt(0)}"] .list-remove`).click();
+  expect(await order()).toEqual(without(idAt(0)));
+
+  // Then a store's only remaining item, and an item in the middle.
+  const lonely = original.findIndex(
+    (line, index) =>
+      line.split(' › ')[0] !== original[index - 1]?.split(' › ')[0] && line.split(' › ')[0] !== original[index + 1]?.split(' › ')[0],
+  );
+  const middle = Math.floor(original.length / 2);
+  for (const index of [lonely, middle].filter((index) => index > 0)) {
+    await page.locator(`#list-body li[data-id="${idAt(index)}"] .list-remove`).click();
+  }
+  expect(await order()).toEqual(without(idAt(0), ...[lonely, middle].filter((index) => index > 0).map(idAt)));
+
+  await page.getByRole('button', { name: /Tout rétablir/ }).click();
+  expect(await order(), 'restored exactly where they were').toEqual(original);
+});
