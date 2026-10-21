@@ -186,6 +186,8 @@ test('in the shopping list, items can be ticked (struck through), removed one by
   await rememberName(context);
   await mockFlipp(context);
   await page.goto(`${site.url}#recettes`);
+  // .all() doesn't wait: make sure the recipes are drawn first (slower on CI).
+  await expect(page.locator('.recipe').nth(1)).toBeVisible();
   for (const card of (await page.locator('.recipe').all()).slice(0, 2)) await card.getByRole('button', { name: '+ Ma liste' }).click();
   await page.locator('#list-fab').click();
 
